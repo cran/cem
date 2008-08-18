@@ -1,0 +1,107 @@
+`cem.main` <-
+function (treatment=NULL, data, cutpoints = NULL,  drop=NULL, 
+    k2k=FALSE, method=NULL, mpower=2, verbose = 0)
+{
+   if (is.null(data)) 
+        stop("Dataframe must be specified", call. = FALSE)
+    if (!is.data.frame(data)) {
+        stop("Data must be a dataframe", call. = FALSE)
+    }
+    if (sum(is.na(data)) > 0) 
+        cat("Missing values exist in the data!\n")
+    
+	if(!is.null(treatment)){
+	 groups <- as.factor(data[[treatment]])
+	 drop <- c(drop,treatment)
+	}
+	drop <- unique(drop)
+	dropped <- match(drop, colnames(data))
+	dropped <- dropped[!is.na(dropped)]
+
+	if(length(dropped)>0) 
+		data <- data[-dropped]
+	vnames <- colnames(data)
+
+    n <- dim(data)[1]
+    nv <- dim(data)[2]
+	mycut <- vector(nv, mode="list")
+    names(mycut) <- vnames
+	# preprocessing
+	if(verbose > 1)
+ 	 cat("\npre-processing data")
+	for (i in 1:nv) {	
+	    if(verbose>1)
+		 cat(".")
+		tmp <- reduce.var(data[[i]], cutpoints[[vnames[i]]])
+		data[[i]] <- tmp$x
+		mycut[[vnames[i]]] <- tmp$breaks
+    }
+
+	obj <- cem.match(data = data, verbose = verbose)
+	obj$X <- data
+	obj$drop <- drop
+	obj$breaks <- mycut
+	imbalance <- NULL
+	tab <- NULL
+	
+	obj$treatment <- treatment
+	obj$n <- dim(data)[1]
+
+	if(!is.null(treatment)){
+		obj$groups <- groups
+		obj$g.names <- levels(obj$groups)
+		obj$n.groups <- length(obj$g.names)
+		obj$group.idx <- sapply(obj$g.names, function(x) which(obj$groups==x))
+		names(obj$group.idx) <- paste("G",obj$g.names,sep="")
+		obj$group.len <- unlist(lapply(obj$group.idx, length))
+        
+		tmp <- find.strata(obj)
+		
+		obj$mstrata <- tmp$mstrata
+		obj$mstrataID <- tmp$mstrataID
+		obj$matched <- !is.na(obj$mstrata)
+		
+	}
+
+	if(!is.null(treatment))
+	 tab <- cem.summary(obj=obj, verbose = verbose)
+
+  
+	obj$tab <- tab
+    obj$k2k <- k2k
+
+	obj$w <- cem.weights(obj)
+	class(obj) <- "cem.match"
+	if(k2k)
+	 obj <- k2k(obj, data, method=method, mpower=mpower, verbose=verbose)
+	return(invisible(obj))
+}
+
+
+
+cem.weights <- function(obj){
+    w <- numeric(obj$n)
+	tmp <- table(obj$mstrata, obj$groups)
+	wh <- tmp[,2]/tmp[,1] * obj$tab[2,1]/obj$tab[2,2]
+	mID <- as.numeric(names(wh))
+    idx <- match(obj$mstrata, mID)
+	idx2 <- match(mID[idx], mID)
+    w <- as.numeric(wh[idx2])
+	w[which(is.na(w))] <- 0
+	w[which(obj$matched & (obj$groups ==  obj$g.names[2]))] <- 1	
+	w
+}
+
+
+find.strata <- function(obj){ 
+ y <- unique(obj$strata)
+ y <- y[!is.na(y)]
+ mstrata <- match(obj$strata,y)
+ n.st <- length(y)
+ tab <- table(mstrata, obj$groups)
+ idx <- as.integer(which(tab[,1]*tab[,2]<1)) 
+ idx <- which(mstrata %in% idx)
+ mstrata[idx] <- NA
+ list(mstrata=mstrata, mstrataID=unique(na.omit(mstrata)))
+}
+

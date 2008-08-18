@@ -1,0 +1,22 @@
+export(cem)
+export(L1.meas)
+export(imbalance)
+export(shift.cem)
+export(relax.cem)
+export(relax.plot)
+export(k2k)
+export(att)
+S3method(plot, relax.cem)
+S3method(print, imbalance)
+S3method(print, L1.meas)
+S3method(print, cem.match)
+S3method(print, multicem)
+S3method(print, cem.att)
+
+
+
+
+
+
+
+

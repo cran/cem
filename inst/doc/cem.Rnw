@@ -1,0 +1,753 @@
+\documentclass[12pt,letterpaper]{article}
+%\usepackage{/usr/lib64/R/share/texmf/Rd}
+%\usepackage{/usr/lib64/R/share/texmf/Sweave}
+%\usepackage{/usr/lib64/R/share/texmf/upquote}
+
+\usepackage{Rd/Rd}
+\usepackage{Rd/Sweave}
+\usepackage{Rd/upquote}
+
+\SweaveOpts{width=70}
+
+% === graphic packages ===
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+% === bibliography package ===
+\usepackage{natbib}
+% === margin and formatting ===
+\usepackage{setspace}
+\usepackage{fullpage}
+\usepackage{caption}
+% === math packages ===
+\usepackage[reqno]{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb,enumerate}
+\newtheorem{Com} {Comment}
+\newtheorem{prop}{Proposition}
+\newtheorem{thm}{Theorem}
+% === dcolumn package ===
+\usepackage{dcolumn}
+\newcolumntype{.}{D{.}{.}{-1}}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+% === additional packages ===
+\usepackage{url}
+\newcommand{\makebrace}[1]{\left\{#1 \right \} }
+\newcommand{\determinant}[1]{\left | #1 \right | }
+\newcommand{\ind}{1\hspace{-2.8mm}{1}}
+\setcounter{tocdepth}{4}
+
+\usepackage{color}
+\usepackage[pdftex, bookmarksopen=true, bookmarksnumbered=true,
+pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0},
+citebordercolor={0 0 1}]{hyperref}
+
+\title{cem: Coarsened Exact Matching}
+\author{}
+
+% rbuild: replace 'Version ' '\\' Version
+\date{Version 1.0.39\\ \today}
+
+%\VignetteIndexEntry{Coarsened Exact Matching}
+%\VignetteDepends{}
+%\VignetteKeyWords{}
+%\VignettePackage{cem}
+
+\begin{document}\maketitle
+\tableofcontents
+
+\section{Introduction}
+
+This program is designed to improve the estimation of causal effects
+via a powerful method of matching that is widely applicable in
+observational data and exceptionally easy to understand and use (if
+you understand how to draw a histogram, you will understand this
+method).  The program implements the CEM (Coarsened Exact Matching)
+algorithm.  This algorithm, and its many attractive statistical
+properties, are described in
+\begin{quote}
+  Stefano M.\ Iacus, Gary King, and Giuseppe Porro, ``Matching for
+  Causal Inference Without Balance Checking'',
+  \url{http://gking.harvard.edu/files/abs/cem-abs.shtml}.\nocite{IacKinPor08}
+\end{quote}
+The paper shows that CEM is a monotonoic imbalance bounding (MIB)
+matching method --- which means that the maximum imbalance between the
+treated and control groups is chosen by the user ex ante rather than
+discovered through the usual laborious process of checking after the
+fact and repeatedly reestimating, and so that adjusting the imbalance
+on one variable has no effect on the maximum imbalance of any other.
+CEM also strictly bounds through ex ante user choice both the degree
+of model dependence and the average treatment effect estimation error,
+eliminates the need for a separate procedure to restrict data to
+common empirical support, meets the congruence principle, is robust to
+measurement error, works well with multiple imputation and other
+methods for missing data, can be completely automated, and is
+extremely fast computationally even with very large data sets.  After
+preprocessing data with CEM, the analyst may then use a simple
+difference in means or whatever statistical model they would have
+applied without matching.  CEM also works well for multicategory
+treatments, creating randomized blocks in experimental designs, and
+evaluating extreme counterfactuals.
+
+\section{Setup}
+
+\subsection{Software Requirements}
+
+CEM works in conjunction with the R Project for Statistical Computing,
+and will run on any platform where R is installed (Windows, Linux, or
+Mac).  R is available free for download at the Comprehensive R Archive
+Network (CRAN) at \url{http://cran.r-project.org/}.  CEM has been
+tested on the most recent version of R.
+
+CEM may be run by installing the program directly, as indicated below,
+or by using the alternative interface to CEM provided by MatchIt
+(\url{http://gking.harvard.edu/matchit}, \citep{HoImaKin07a}).  Using
+CEM directly is faster.  The MatchIt interface is easier for some
+applications and works seemlessly with Zelig
+(\url{http://gking.harvard.edu/zelig}) for estimating causal effects
+after matching, but presently only offers a subset of features of the
+R version.  A Stata verison of CEM is also available at the CEM web
+site, \url{http://gking.harvard.edu/cem}.
+
+\subsection{Installation}
+\label{sec:install}
+
+To install cem, type at the R command prompt,
+\begin{verbatim}
+> install.packages("cem")
+\end{verbatim}
+and CEM will install itself onto your system automatically from CRAN.
+You may alternatively load the beta test version as
+\begin{verbatim}
+> install.packages("cem",repos="http://gking.harvard.edu/cem")
+\end{verbatim}
+
+
+\subsection{Loading CEM} \label{sec:load}
+
+You need to install CEM only once, but you must load it prior to each
+use.  Do this at the R prompt:
+\begin{verbatim}
+> library(cem)
+\end{verbatim}
+
+\subsection{Updating CEM}
+
+We recommend that you periodically update CEM at the R prompt by
+typing:
+\begin{verbatim}
+> update.packages()
+\end{verbatim}
+which will update all the libraries including CEM
+and load the new version of the package with
+\begin{verbatim}
+> library(cem)
+\end{verbatim}
+
+
+\section{A User's Guide}
+
+We show here how to use CEM through a simple running example: the
+National Supported Work (NSW) Demonstration data, also known as the
+Lalonde data set \citep{Lalonde86}.  This program provided training to
+selected individuals for 12-18 months and help finding a job in the
+hopes of increasing their' earnings.  The treatment variable,
+\code{treated}, is 1 for participants (the treatment group) and 0 for
+nonparticipants (the control group).  The key outcome variable is
+earnings in 1978 (\code{re78}).  The statistical goal is to estimate a
+specific version of a causal effect: the sample average treatment
+effect on the treated (the ``SATT'').
+
+Since participation in the program was not assigned strictly at
+random, we must control for a set of pretreatment variables by the CEM
+algorithm.  These pre-treatment variables include age (\code{age}),
+years of education (\code{education}), marital status
+(\code{married}), lack of a high school diploma (\code{nodegree}),
+race (\code{black}, \code{hispanic}), indicator variables for
+unemployment in 1974 (\code{u74}) and 1975 (\code{u75}), and real
+earnings in 1974 (\code{re74}) and 1975 (\code{re75}).  Some of these
+are dichotomous (\code{married}, \code{nodegree}, \code{black},
+\code{hispanic}, \code{u74}, \code{u75}), some are categorical
+(\code{age} and \code{education}), and the earnings variables are
+continuous and highly skewed with point masses at zero.  We modify
+these data by adding a (fictitious) variable to illustrate discrete
+responses called \code{q1}, the answer to a survey question asking
+before assignment for an opinion about this job training program, with
+possible responses {\it strongly agree}, {\it agree}, {\it neutral},
+{\it strongly disagree}, {\it disagree}, and {\it no opinion}; note
+that the last category is not on the same ordered scale as the other
+responses.  Ten percent of the observations have missing data (added
+randomly by us to illustrate how CEM deals with missingness).  We call
+this new data set the \code{LeLonde} (intentionally misspelling
+Lalonde); the original, unmodified \citet{Lalonde86} data are
+contained in data set \code{LL}.
+
+Matching is not a method of estimation; it is a way to preprocess a
+data set so that estimation of SATT based on the matched data set will
+be less ``model-dependent'' (i.e., less a function of apparently small
+and indefensible modeling decisions) than when based on the original
+full data set.  Matching involves pruning observations that have no
+close matches on pre-treatment covariates in both the treated and
+control groups.  The result is typically less model-dependence, bias,
+and (by removing heterogeneity) inefficiency
+\citep{KinZen06,HoImaKin07,IacKinPor08}.
+
+\subsection{Basic Evaluation and Analysis of Unmatched Data}\label{s:basic}
+
+We begin with a naive estimate of SATT --- the simple difference in
+means --- which would be useful only if the in-sample distribution of
+pre-treatment covariates were the same in the treatment and control
+groups:
+
+<<echo=FALSE, print=FALSE>>=
+options("digits"=4)
+options("width"=80)
+@
+<<echo=TRUE, print=FALSE>>=
+require(cem)
+data(LeLonde)
+@
+We remove missing data from the the data set before starting the
+analysis (we show better procedures for dealing with missing data in
+Section \ref{s:mv}).
+<<echo=TRUE, print=FALSE>>=
+Le <- data.frame(na.omit(LeLonde))
+@  
+and then compute the size of the treated and control groups:
+<<echo=TRUE, print=FALSE>>=
+tr <- which(Le$treated==1)
+ct <- which(Le$treated==0)
+ntr <- length(tr)
+nct <- length(ct)
+@  
+Thus, the data include \Sexpr{ntr} treated units and \Sexpr{nct} control
+units.  The (unadjusted and therefore likely biased) difference in 
+means is then:
+
+<<echo=TRUE, print=TRUE>>=
+mean(Le$re78[tr]) - mean(Le$re78[ct])
+@
+
+Because the variable \code{treated} was not randomly assigned, the
+pre-treatment covariates differ between the treated and control
+groups.  To see this, we focus on these pre-treatment covariates:
+
+<<echo=TRUE, print=FALSE>>=
+vars <- c("age", "education", "black", "married", "nodegree", "re74",
+"re75", "hispanic", "u74", "u75","q1")
+@
+
+The overall imbalance is given by the $\mathcal L_1$ statistic,
+introduced in \citet{IacKinPor08} as a comprehensive measure of global
+imbalance.  It is based on the $L_1$ difference between the
+multidimensional histogram of all pretreatment covariates in the
+treated group and that in the control group.  Perfect global balance
+is indicated by $\mathcal L_1=0$, and larger values indicate larger
+imbalance between the groups.  To use this measure, we require a list
+of bin sizes for the numerical variables.  Our functions compute these
+automatically, or they can be set by the user.\footnote{Of
+  course, as with drawing histograms, the choice of bins affects the
+  final result.  The important thing is to choose one and keep it the
+  same throughout to allow for fair comparisons.  The particular
+  choice is less crucial.}
+
+<<echo=FALSE, print=FALSE>>=
+L1 <- L1.meas(Le$treated, Le[vars])$L1 
+@
+
+We compute $\mathcal L_1$ statistic, as well as several unidimensional
+measures of imbalance via our \code{imbalance} function.  In our
+running example:
+  
+<<echo=TRUE, print=TRUE>>= 
+imbalance(group=Le$treated, data=Le[vars])
+@ 
+  
+Only the overall $\mathcal L_1$ statistic measure includes imbalance
+with respect to the full joint distribution, including all
+interactions, of the covariates; in the case of our example, $\mathcal
+L_1=$\Sexpr{sprintf("%.3f", L1)}.  The unidimensional measures in the
+table are all computed for each variable separately.
+
+The first column in the table of unidimensional measures, labeled
+\code{statistic}, reports the difference in means for numerical
+variables (indicated by the second column, \code{type}, reporting
+\code{(diff)}) or a chi-square difference for categorical variables
+(when the second column reports \code{(Chi2)}).  The second column,
+labeled \code{L1}, reports the $\mathcal L_1^j$ measure, which is
+$\mathcal L_1$ computed for the $j$-th variable separately (which of
+course does not include interactions).  The remaining columns in the
+table report the difference in the empirical quantile of the
+distributions of the two groups for the 0th (min), 25th, 50th, 75th,
+and 100th (max) percentiles for each variable.  When the variable type
+is \code{Chi2}, the only variable-by-variable measure that is defined
+in this table is $\mathcal L_1^j$; others are reported missing.
+
+This particular table shows that variables \code{re74} and \code{re75}
+are imbalanced in the raw data in many ways and variable \code{age} is
+balanced in means but not in the quantiles of the two distributions.
+This table also illustrates the point that balancing only the means
+between the treated and control groups does not necessarily guarantee
+balance in the rest of the distribution.  Most important, of course,
+is the overall $\mathcal L_1$ measure, since even if the marginal
+distribution of every variable is perfectly balanced, the joint
+distribution can still be highly imbalanced.
+
+As an aside, we note that for convenience that the function
+\code{imbalance} allows you to drop some variables before computation:
+\begin{verbatim}
+todrop <- c("treated", "re78")
+imbalance(group=Le$treated, data=Le, drop=todrop)
+\end{verbatim}
+
+%%$
+
+\subsection{Coarsened Exact Matching}\label{sec:cem}
+
+We now apply the coarsened exact matching algorithm by calling the
+function \code{cem}.  The CEM algorithm performs exact matching on
+coarsened data to determine matches and then passes on the uncoarsened
+data from observations that were matched to estimate the causal
+effect.  Exact matching works by first sorting all the observations
+into strata, each of which has identical values for all the coarsened
+pre-treatment covariates, and then discarding all observations within
+any stratum that does not have at least one observation for each
+unique value of the treatment variable.
+
+To run this algorithm, we must choose a type of coarsening for each
+covariate.  We show how this is done this via a fully automated
+procedures in Section \ref{s:cem-auto}.  Then we show how to use
+explicit prior knowledge to choose the coarsening in Section
+\ref{s:cem-user}, which is normally preferable when feasible.
+
+In CEM, the treatment variable may be \emph{dichotomous} or
+\emph{mutichotomous}.  Alternatively, \code{cem} may be used for
+\emph{randomized block experiments} without specifying a treatment
+variable; in this case no strata are deleted and the treatment
+variable is (randomly) assigned to units within each strata to ensure
+that each has at least one observation assigned each value of the
+treated variable.
+
+\subsubsection{Automated Coarsening}\label{s:cem-auto}
+
+In our running example we have a dichotomous treatment variable.  In
+the following code, we match on all variables but \code{re78}, which
+is the outcome variable and so should never be included.  Hence we
+proceed specifying \code{"re78"} in argument \code{drop}:
+
+<<echo=TRUE, print=FALSE>>=
+mat <- cem(treatment = "treated", data = Le, drop = "re78")
+@
+%
+The output object \code{mat} contains useful information about the
+match, including a (small) table about the number of observations in
+total, matched, and unmatched, as well as the results of a call to the
+\code{imbalance} function for information about the quality of the
+matched data (unless \code{eval.imbalance} is set to \code{FALSE}).
+Since \code{cem} bounds the imbalance ex ante, the most important
+information in \code{mat} is the number of observations matched.  But
+the results also give the imbalance in the matched data using the same
+measures as that in the original data described in Section
+\ref{s:basic}.  Thus,
+
+<<echo=TRUE, print=FALSE>>=
+mat
+@
+
+We can see from these results the number of observations matched and
+thus retained, as well as those which were pruned because they were
+not comparable.  By comparing the imbalance results to the original
+imbalance table given in the previous section, we can see that a good
+match can produce a substantial reduction in imbalance, not only in
+the means, but also in the marginal and joint distributions of the
+data.
+
+The function \code{cem} also generates weights for use in the
+evaluation of imbalance measures and estimates of the causal effect
+(stored in \code{mat\$w}).
+
+\subsubsection{Coarsening by Explicit User Choice}\label{s:cem-user}
+
+The power and simplicity of CEM comes from choosing the coarsening
+yourself rather than using the automated algorithm as in the previous
+section.  Choosing the coarsening enables you to set the maximum level
+of imbalance ex ante, which is a direct function of the coarsening you
+choose.  By controlling the coarsening, you also put an explicit bound
+on the degree of model dependence and the SATT estimation error.
+
+Fortunately, the coarsening is a fundamentally substantive act, almost
+synonymous with the measurement of the original variables.  In other
+words, if you know something about the data you are analyzing, you
+almost surely have enough information to choose the coarsening.  (And
+if you don't know something about the data, you might ask why you are
+analyzing it in the first place!) 
+
+In general, we want to set the coarsening for each variable so that
+substantively indistinguishable values are grouped and assigned the
+same numerical value.  Groups may be of different sizes if
+appropriate.  Recall that any coarsening during CEM is used only for
+matching; the original values of the variables are passed on to the
+analysis stage for all matched observations.
+
+The function \code{cem} treats categorical and numerical
+variables differently.
+
+For \emph{categorical} variables, we use the \code{grouping} option.
+For example, in variable \code{q1} may want to set this option such
+that we form three separate groups like this:
+ 
+<<echo=TRUE, print=FALSE>>=
+q1.grp <- list(c("strongly agree", "agree"), c("neutral","no opinion"), c("strongly disagree","disagree"))
+@
+
+For \emph{numerical} variables, we use the \code{cutpoints} option.
+Thus, for example, in the US educational system, the following
+discretization of years of education corresponds to different levels
+of school
+\begin{center}
+\begin{tabular}{ll}
+Grade school    & 0--6\\
+Middle school   & 7--8\\
+High school     & 9--12\\
+College         & 13--16\\
+Graduate school & $>$16 
+\end{tabular}
+\end{center}
+Using these natural breaks in the data to create the coarsening is
+generally a good approach and certainly better than using fixed bin
+sizes (as in caliper matching) that disregard these meaningful breaks.
+Because in our data, no respondents fall in the last
+category,
+
+<<echo=TRUE, print=FALSE>>=
+table(Le$education)
+@
+we define the cutpoints as:
+<<echo=TRUE, print=FALSE>>=
+educut <- c(0, 6.5, 8.5, 12.5, 17)
+@
+and run \code{cem} adding only the \code{grouping} and
+\code{cutpoints} options, leaving the rest unchanged:
+<<echo=TRUE, print=FALSE>>=
+mat1 <- cem(treatment = "treated", data = Le, drop = "re78", 
+cutpoints = list(education=educut), grouping=list(q1.grp))
+mat1
+@
+%
+As we can see, this matching solution differs from that resulting from
+our automated approach in the previous section.  For comparison, the
+automatic cutpoints produced by \code{cem} are stored in the output
+object in slot \code{breaks}.  So, for example, our automated
+coarsening produced:
+<<echo=TRUE, print=FALSE>>=
+mat$breaks$education
+@
+whereas we can recover our personal choice of cutpoints as
+<<echo=TRUE, print=FALSE>>=
+mat1$breaks$education
+@
+\subsection{Progressive coarsening}
+
+Although the maximum imbalance is fixed ex ante by the user's
+coarsening choices, the number of observations matched is determined
+as a consequence of the matching procedure.  If you are dissatisfied
+with the number of observations available after matching, and you feel
+that it is substantively appropriate to coarsen further, then just
+increase the coarsening (by using fewer cutpoints).  The result will
+be additional matches and of course a concommitant increase in the
+maximum possible imbalance between the treated and control groups.
+This is easy with CEM because, unlike most other methods, CEM is a
+monotonic imbalance bounding (MIB) method, which means that increasing
+the imbalance on one variable (through a change in coarsening) will
+not change the maximum imbalance on any other variable.  MIB thus
+enables you to tinker with the solution one variable at a time to
+quickly produce a satisfactory result, if one is feasible.
+
+If, however, you feel that additional coarsening is not appropriate,
+than too few obserations may indicate that your data contains
+insufficient information to estimate the causal effects of interest
+without model dependence; in that situation, you either give up or
+will have to attempt adjusting for the pre-treatment covariates via
+modeling assumptions.
+
+Suppose, instead, that you are unsure whether to coarsen further or
+how much to coarsen, and are willing to entertain alternative matching
+solutions.  We offer here an automated way to compute these solutions.
+The idea is to relax the initial \code{cem} solution selectively and
+automatically, to prune equivalent solutions, and to present them in a
+convenient manner so that users can ascertain where the difficulties
+in matching in these data can be found and what choices would produce
+which outcomes in terms of the numbers of observations matched.
+
+We start by illustrating what happens when we relax a CEM solution
+``by hand''.  The following three runs show the effect on the matching
+solution (in terms of the number of observations and imbalance) when
+the coarsening for one variable (\code{age}) is relaxed from 10 to 6
+to 3 bins.  As can be seen, fewer cutpoints (which means larger bins)
+produces more matched units and high maximum (and in this case
+actual) imbalance:
+<<echo=TRUE, print=FALSE>>=
+cem("treated", Le, cutpoints = list(age=10), drop="re78", grouping=q1.grp)
+cem("treated", Le, cutpoints = list(age=6), drop="re78", grouping=q1.grp)
+cem("treated", Le, cutpoints = list(age=3), drop="re78", grouping=q1.grp)
+@
+
+We automate this \emph{progressive coarsening} procedure here in the
+\code{relax.cem} function.  This function starts with the output of
+\code{cem} and relaxes variables one (\code{depth=1}), two
+(\code{depth=2}), or three (\code{depth=3}) at a time, while
+optionally keeping unchanged a chosen subset of the variables which we
+know well or have important effects on the outcome (\code{fixed}).
+The function also allows one to specify the minimal number of breaks
+of each variable (the default limit being 1).  We begin with this
+example (the argument \code{perc=0.3} is passed to the plot function
+and implies that only the solutions with at least 30\% of the units
+are matched)
+
+<<echo=TRUE, print=FALSE>>= 
+tab <- relax.cem(mat, Le, depth=1, perc=0.3) 
+@
+\begin{figure}[Ht]
+\begin{center}
+<<results=tex,echo=FALSE>>= 
+pdf("coarsen1.pdf", width=9, height=6, pointsize=10)
+plot(tab,perc=0.3)
+invisible(dev.off())
+@
+\includegraphics[width=1.1\textwidth, viewport=0 60 700 400,clip]{coarsen1} 
+\end{center}
+\caption{Example of the graphical output of $\tt relax.cem$.}
+\label{fig:coarsen}
+\end{figure}
+
+After all possible coarsening relaxations are attempted, the function
+returns a list of tables, one per group (i.e. treated and control).
+Each row of the tables contain information about the number of treated
+and control units matched, the value of the $\mathcal L_1$ measure,
+and the type of relaxation made.  Each table is the sorted according
+to the number of treated (or control) units matched.
+
+The user may want to see the output of \code{tab\$G1} or
+\code{tab\$G0} but these tables may be very long, and so we provide a
+method \code{plot} to view these tables more conveniently.  The output
+of \code{plot(tab)} is plotted in Figure \ref{fig:coarsen} from which
+it is seen that the most difficult variables to match are \code{age}
+and \code{education}.  On the $x$-axis of the plot the variable and
+the number of equally sized bins used for the coarsening are used
+(color-coded by variable).  On the $y$-axis on the right is the
+absolute number of treated units matched, while the left side $y$-axis
+reports the same number in percentages.  The numbers below the dots in
+the graphs represent the $\mathcal L_1$ measure corresponding to that
+matching solution.  This graph also gives a feeling of the MIB
+behaviour of \code{cem}. When the tables produced by \code{relax.cem}
+are too large, the \code{plot} function, allows for some reduction
+like printing only the best matching solutions (in the terms of number
+of treated units matched), removing duplicates (i.e. different
+coarsenings may lead to the same matching solution), or printing only
+solution where at least some percentage of treated units, have been
+matched, or a combination of these. For more information refer to the
+reference manual for the function \code{relax.plot} which can be
+called directly instead of plot.
+
+Here is one example of use of \code{plot} in which we specify that
+only solutions with at least 60\% of the treated units are matched and
+duplicated solutions are removed. The output can be seen in Figure
+\ref{fig:coarsen2}
+
+<<echo=TRUE, print=FALSE>>=
+plot(tab, group="1", perc=0.35,unique=TRUE)
+@
+\begin{figure}[Ht]
+\begin{center}
+<<results=tex,echo=FALSE>>= 
+pdf("coarsen2.pdf", width=9, height=6, pointsize=10)
+plot(tab, group="1", perc=0.35,unique=TRUE)
+invisible(dev.off())
+@
+\includegraphics[width=1.1\textwidth,   viewport=0 60 700 400,clip]{coarsen2} 
+\end{center}
+\caption{Example of reduced graphical output of $\tt relax.cem$.}
+\label{fig:coarsen2}
+\end{figure}
+
+\subsection{Restricting the matching solution to a $k$-to-$k$ match}
+
+By default, CEM uses maximal information, resulting in strata that may
+include different numbers of treated and control units.  To compensate
+for the differential strata sizes, \code{cem} also returns weights to
+be used in subsequent analyses.  Although this is generally the best
+option, a user with enough data may opt for a $k$-to-$k$ solution to
+avoid the slight inconvenience of needing to use weights.
+
+The function \code{k2k} accomplishes this by pruning observations from
+a \code{cem} solution within each stratum until the solution contains
+the same number of treated and control units in all strata.  Pruning
+occurs within a stratum (for which observations are indistuinguishable
+to cem proper) by using nearest neighbor selection using a distance
+function specified by the user (including \code{euclidean},
+\code{maximum}, \code{manhattan}, \code{canberra}, \code{binary}, or
+\code{minkowski}). By default \code{method} is set to \code{NULL},
+which means random matching inside \code{cem} strata, an option that
+may reduce the chance for bias.  (For the Minkowski distance the power
+can be specified via the argument \code{mpower}.  For more information
+on \code{method != NULL}, refer to \code{dist} help page.)  
+
+Here is an example of this approach.  First, by running \code{cem}:
+
+<<echo=TRUE, print=FALSE>>=
+mat <- cem(treatment="treated",data=Le, drop="re78")
+mat
+mat$k2k
+@
+and now pruning to a $k$-to-$k$ solution, using the euclidean distance
+within CEM strata:
+<<echo=TRUE, print=FALSE>>=
+mat2 <- k2k(mat, Le, "euclidean", 1)
+mat2
+mat2$k2k
+@
+Alternatively, we can produce the same result in one step by adding
+the \code{k2k=TRUE} option to the original \code{cem} call.
+
+\subsection{Estimating the Causal Effect from $\tt cem$ output}
+
+Using the output from \code{cem}, we can estimate SATT via the
+\code{att} function.  The simplest approach requires a weighted
+difference in means (unless \code{k2k} was used, in which case no
+weights are required).  For convenience, we compute this as a
+regression of the outcome variable on a constant and the treatment variable,
+<<echo=TRUE, print=FALSE>>=
+est <- att(mat, re78 ~ treated, data = Le)
+est
+@
+where the SATT estimate is the coefficient on the \code{treated}
+variable, in our case \Sexpr{sprintf("%.2f", est$model[1,2])}.  The function
+\code{att} allows for R's standard \code{formula} interface and, by
+default, uses \code{lm} to estimate the model using the weights 
+produced by \code{cem}.  
+
+If exact matching (i.e., without coarsening) was chosen this procedure
+is appropriate as is.  In other situations, with some coarsening, some
+imbalance remains in the matched data.  The remaining imbalance is
+strictly bounded by the level of coarsening, which can be seen by any
+remaining variation within the coarsened bins.  Thus, a reasonable
+approach in this common situation is to attempt to adjust for the
+remaining imbalance via a statistical model.  (Modeling assumptions
+for models applied to the matched data are much less consequential
+than they would otherwise be because CEM is known to strictly bound
+the level of model dependence.)  To apply a statistical model to
+control for the remaining imbalance, we use the \code{formula}
+interface in \code{att}.  For example:
+
+<<echo=TRUE, print=FALSE>>=
+est2 <- att(mat, re78 ~ treated + re74 + re75, data = Le)
+est2
+@
+
+The user can also specify \code{glm} modeling in the case of binary,
+count, or other noncontinuous outcome variables.  For more
+information, see the reference manual entry for \code{att}.
+
+\subsection{Matching and Missing Data}\label{s:mv}
+
+Almost all previous methods of matching assume the absence of any
+missing values.  In contrast, CEM offers two valid approaches to
+dealing with missing values (item nonresponse).  In the first, where
+we treat missing values as one of the values of the variables, is
+appropriate when ``\code{NA}'' is a valid value that is not really
+missing (such as when ``no opinion'' really means no opinion); see
+Section \ref{s:mvdirect}.  The other is a special procedure to allow
+for multiply imputed data in CEM, as described in Section
+\ref{s:mvmi}.
+
+\subsubsection{Matching on Missingness}\label{s:mvdirect}
+
+In the next example, we use our original \code{LeLonde} data with
+missing values and we compare the result with \code{Le} from which we
+dropped the \code{NA} values.  For comparability, we use the same
+cutpoints we used in Section \ref{sec:cem} on the \code{Le} data. The
+cutpoints are contained in \code{mat\$breaks}
+
+<<echo=TRUE, print=FALSE>>=
+mat3 <- cem("treated", LeLonde, drop="re78", cutpoints = mat$breaks, grouping=list(q1=q1.grp))
+mat3
+@
+and we compare the above with the solution obtained by dropping the observations with missing data
+<<echo=TRUE, print=FALSE>>=
+mat4 <- cem("treated", Le, drop="re78", cutpoints = mat$breaks, grouping=list(q1=q1.grp))
+mat4
+@
+
+and, as expected, the two solutions differ somewhat. The gain (in
+terms of number of matched units) decreases as the number of
+covariates increases.
+
+\subsubsection{Matching Multiply Imputed Data}\label{s:mvmi}
+
+Consider a data set to be matched, some of which is missing. One
+approach to analyzing data with missing values is \emph{multiple
+imputation}, which involves creating $m$ (usually about $m=5$) data
+sets, each of which is the same as the original except that the
+missing values have been imputed in each.  Uncertainty in the values
+of the missing cells is represented by variation in the imputations
+across the different imputed data sets \citep{KinHonJos01}.
+
+As an example we take the original \code{LeLonde} data with missing values
+<<echo=TRUE, print=FALSE>>=
+summary(LeLonde)
+@
+Now we use \code{Amelia} package \citep{HonKinBLa06} to create
+multiply imputed data sets:
+<<echo=TRUE, print=FALSE>>=
+require(Amelia)
+set.seed(123)
+imputed <- amelia(LeLonde,noms=c("black","hispanic","treated","married","nodegree",
+"u74","u75","q1"))[1:5]
+@
+
+Now \code{imputed} contains a list of 5 multiply imputed versions of
+\code{LeLonde}.  We pass this list to the \code{cem} function in the argument
+\code{datalist} and \code{cem} produces a set of multiply imputed
+solutions, as usual with the original uncoarsened values of the
+variables, but now assigning each multiply imputed observation to the
+strata where it falls most frequently.  The output of \code{cem} is a
+list of \code{cem.match} solutions (named \code{match1},
+\code{match2},\dots, \code{match5}).  (Be sure to also name the
+original data frame in option \code{data} or \code{cem} will merely
+run the basic algorithm five separate times on each of the input data
+sets, a procedure that can be useful for batch processing of data to
+be matched, but is not recommended for multiply imputed data sets
+since the strata will not be the same across the data sets.)  For
+example:
+<<echo=TRUE, print=FALSE>>=
+mat2 <- cem("treated", datalist=imputed, drop="re78", data=LeLonde, grouping=list(q1=q1.grp))
+mat2
+@
+
+Now we estimate SATT via the usual multiple imputation combining
+formulas (averaging the point estimates and within and between
+variances, as usual; see \citealt{KinHonJos01}).  The function
+\code{att} implements these procedures:
+<<echo=TRUE, print=FALSE>>=
+out <- att(mat2, re78 ~ treated, data=imputed)
+@
+\clearpage
+
+\section{Reference to CEM's Functions}
+
+\include{Rd/cem}
+\include{Rd/att}
+\include{Rd/DW}
+\include{Rd/imbalance}
+\include{Rd/k2k}
+\include{Rd/L1.meas}
+\include{Rd/LL}
+\include{Rd/LeLonde}
+\include{Rd/relax.cem}
+\include{Rd/shift.cem}
+
+\bibliographystyle{apsr} 
+\bibsep=0in 
+\bibliography{gk.bib,gkpubs.bib}
+\end{document}
