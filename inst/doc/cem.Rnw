@@ -43,11 +43,11 @@
 pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0},
 citebordercolor={0 0 1}]{hyperref}
 
-\title{cem: Coarsened Exact Matching}
+\title{CEM: Software for Coarsened Exact Matching}
 \author{}
 
 % rbuild: replace 'Version ' '\\' Version
-\date{Version 1.0.39\\ \today}
+\date{Version 1.0.41\\ \today}
 
 %\VignetteIndexEntry{Coarsened Exact Matching}
 %\VignetteDepends{}
@@ -120,9 +120,12 @@ To install cem, type at the R command prompt,
 and CEM will install itself onto your system automatically from CRAN.
 You may alternatively load the beta test version as
 \begin{verbatim}
-> install.packages("cem",repos="http://gking.harvard.edu/cem")
+> install.packages("cem",repos="http://gking.harvard.edu")
 \end{verbatim}
-
+or if you are on a Macintosh, use:
+\begin{verbatim}
+install.packages("cem", repos="http://gking.harvard.edu", type="source")
+\end{verbatim}
 
 \subsection{Loading CEM} \label{sec:load}
 
@@ -731,6 +734,7 @@ variances, as usual; see \citealt{KinHonJos01}).  The function
 \code{att} implements these procedures:
 <<echo=TRUE, print=FALSE>>=
 out <- att(mat2, re78 ~ treated, data=imputed)
+out
 @
 \clearpage
 
