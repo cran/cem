@@ -7,9 +7,7 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
     if (!is.data.frame(data)) {
         stop("Data must be a dataframe", call. = FALSE)
     }
-    if (sum(is.na(data)) > 0) 
-        cat("Missing values exist in the data!\n")
-    
+      
 	if(!is.null(treatment)){
 	 groups <- as.factor(data[[treatment]])
 	 drop <- c(drop,treatment)
@@ -21,6 +19,8 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
 	if(length(dropped)>0) 
 		data <- data[-dropped]
 	vnames <- colnames(data)
+    if (sum(is.na(data)) > 0) 
+        cat("Missing values exist in the data!\n")
 
     n <- dim(data)[1]
     nv <- dim(data)[2]
@@ -69,7 +69,6 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
   
 	obj$tab <- tab
     obj$k2k <- k2k
-
 	obj$w <- cem.weights(obj)
 	class(obj) <- "cem.match"
 	if(k2k)
@@ -80,15 +79,17 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
 
 
 cem.weights <- function(obj){
-    w <- numeric(obj$n)
-	tmp <- table(obj$mstrata, obj$groups)
-	wh <- tmp[,2]/tmp[,1] * obj$tab[2,1]/obj$tab[2,2]
-	mID <- as.numeric(names(wh))
-    idx <- match(obj$mstrata, mID)
-	idx2 <- match(mID[idx], mID)
-    w <- as.numeric(wh[idx2])
-	w[which(is.na(w))] <- 0
-	w[which(obj$matched & (obj$groups ==  obj$g.names[2]))] <- 1	
+    w <- rep(1,obj$n)
+	if(!is.null(obj$treatment)){
+	 tmp <- table(obj$mstrata, obj$groups)
+	 wh <- tmp[,2]/tmp[,1] * obj$tab[2,1]/obj$tab[2,2]
+	 mID <- as.numeric(names(wh))
+     idx <- match(obj$mstrata, mID)
+	 idx2 <- match(mID[idx], mID)
+     w <- as.numeric(wh[idx2])
+	 w[which(is.na(w))] <- 0
+	 w[which(obj$matched & (obj$groups ==  obj$g.names[2]))] <- 1	
+	}
 	w
 }
 

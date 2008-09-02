@@ -21,7 +21,7 @@ Type 'q()' to quit R.
 > dir.create(file.path(wd,"Rd"))
 Warning message:
 In dir.create(file.path(wd, "Rd")) :
-  '/tmp/rbuild_25719/cegg/cem/inst/doc/Rd' already exists
+  '/tmp/rbuild_18365/cegg/cem/inst/doc/Rd' already exists
 > setwd(file.path(R.home(),"share/texmf"))
 > file.copy(dir(), file.path(wd,"Rd"),TRUE)
 [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE

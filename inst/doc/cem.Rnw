@@ -47,7 +47,7 @@ citebordercolor={0 0 1}]{hyperref}
 \author{}
 
 % rbuild: replace 'Version ' '\\' Version
-\date{Version 1.0.41\\ \today}
+\date{Version 1.0.44\\ \today}
 
 %\VignetteIndexEntry{Coarsened Exact Matching}
 %\VignetteDepends{}
@@ -122,10 +122,10 @@ You may alternatively load the beta test version as
 \begin{verbatim}
 > install.packages("cem",repos="http://gking.harvard.edu")
 \end{verbatim}
-or if you are on a Macintosh, use:
-\begin{verbatim}
-install.packages("cem", repos="http://gking.harvard.edu", type="source")
-\end{verbatim}
+%or if you are on a Macintosh, use:
+%\begin{verbatim}
+%install.packages("cem", repos="http://gking.harvard.edu", type="source")
+%\end{verbatim}
 
 \subsection{Loading CEM} \label{sec:load}
 

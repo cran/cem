@@ -13,8 +13,8 @@ L1.meas <- function(group, data, drop=NULL, breaks=NULL, weights){
   nv <- length(vars)
   breaks <- vector(nv, mode="list")
   for(i in 1:nv){
-   if(is.numeric(data[i]) | is.integer (data[i]))
-    breaks[[i]] <- pretty(range(data[i],na.rm=TRUE), n=nclass.scott(data[[i]]), 1)
+   if(is.numeric(data[[i]]) | is.integer (data[[i]]))
+    breaks[[i]] <- pretty(range(data[[i]],na.rm=TRUE), n=nclass.scott(data[[i]]), 1)
    names(breaks) <- vars
   }
  }  
@@ -48,8 +48,8 @@ cem.imbalance <- function(group, data, collapsed=TRUE, reduced=TRUE, breaks=NULL
   nv <- length(vars)
   breaks <- vector(nv, mode="list")
   for(i in 1:nv){
-   if(is.numeric(data[i]) | is.integer (data[i]))
-    breaks[[i]] <- pretty(range(data[i],na.rm=TRUE), n=nclass.scott(na.omit(data[[i]])), 1)
+   if(is.numeric(data[[i]]) | is.integer (data[[i]]))
+    breaks[[i]] <- pretty(range(data[[i]],na.rm=TRUE), n=nclass.scott(na.omit(data[[i]])), 1)
    names(breaks) <- vars
   }
  }  
@@ -109,8 +109,8 @@ imbalance <- function(group, data, drop=NULL, breaks=NULL, weights){
   nv <- length(vars)
   breaks <- vector(nv, mode="list")
   for(i in 1:nv){
-   if(is.numeric(data[i]) | is.integer (data[i]))
-    breaks[[i]] <- pretty(range(data[i],na.rm=TRUE), n=nclass.scott(na.omit(data[[i]])), 1)
+   if(is.numeric(data[[i]]) | is.integer (data[[i]]))
+    breaks[[i]] <- pretty(range(data[[i]],na.rm=TRUE), n=nclass.scott(na.omit(data[[i]])), 1)
    names(breaks) <- vars
   }
  }  

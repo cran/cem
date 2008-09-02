@@ -47,7 +47,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
      mat <- cem.main(treatment=treatment, data=data, cutpoints = cutpoints,  drop=drop, 
                k2k=k2k, method=method, mpower=mpower, 
 			   verbose = verbose)
- 	 if(eval.imbalance)
+ 	 if(eval.imbalance & !is.null(treatment))
 	  mat$imbalance <- imbalance(mat$groups, data=L1data, drop=mat$drop, breaks=L1.breaks,
 	                  weights=mat$w)
 	mat$grouping <- grouping				  
@@ -136,7 +136,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
 	 list.obj[[i]] <- obj
     }
 
-	if(eval.imbalance){
+	if(eval.imbalance  & !is.null(treatment)){
     avg.data <- datalist[[1]]
     nv <- length(colnames(datalist[[1]]))
     for(j in 1:nv){ 
@@ -166,7 +166,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
     list.obj[[i]] <- cem.main(treatment=treatment, data=datalist[[i]], cutpoints = cutpoints,  drop=drop, 
             k2k=k2k, method=method, mpower=mpower, verbose = verbose)
     unique <- FALSE
-	if(eval.imbalance)
+	if(eval.imbalance & !is.null(treatment))
 	  list.obj[[i]]$imbalance <- imbalance(list.obj[[i]]$groups, data=L1datalist[[i]], drop=list.obj[[i]]$drop, breaks=L1.breaks,
 	                  weights=list.obj[[i]]$w)
     list.obj[[i]]$grouping <- grouping

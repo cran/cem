@@ -109,12 +109,15 @@ relax.plot(tab, group="1", perc=0.6)
 relax.plot(tab, group="1", perc=0.6,unique=TRUE)
 
 tab1 <- relax.cem(mat, LL, depth=1, minimal=list(re74=6, age=3, education=3, re75=5))
-tab2 <- relax.cem(mat, LL, depth=1, minimal=list(re74=6, age=3, education=3, re75=5), shifts=0.01)
-tab3 <- relax.cem(mat, LL, depth=1, minimal=list(age=3, education=3), fixed=c("re74","re75"))
+tab2 <- relax.cem(mat, LL, depth=1, minimal=list(re74=6, age=3,
+                  education=3, re75=5), shifts=0.01)
+tab3 <- relax.cem(mat, LL, depth=1, minimal=list(age=3, education=3),
+                  fixed=c("re74","re75"))
 
 
 # uncomment to run. Might be slow
-# tab4 <- relax.cem(mat, LL, depth=2, minimal=list(age=4, education=3,re75=6), plot=FALSE, fixed="re74")
+# tab4 <- relax.cem(mat, LL, depth=2, minimal=list(age=4,
+#                   education=3,re75=6),plot=FALSE, fixed="re74")
 # relax.plot(tab4)
 # relax.plot(tab4, unique=TRUE)
 # relax.plot(tab4, perc=0.7)
