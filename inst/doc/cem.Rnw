@@ -47,7 +47,7 @@ citebordercolor={0 0 1}]{hyperref}
 \author{}
 
 % rbuild: replace 'Version ' '\\' Version
-\date{Version 1.0.44\\ \today}
+\date{Version 1.0.80\\ \today}
 
 %\VignetteIndexEntry{Coarsened Exact Matching}
 %\VignetteDepends{}
@@ -621,13 +621,15 @@ difference in means (unless \code{k2k} was used, in which case no
 weights are required).  For convenience, we compute this as a
 regression of the outcome variable on a constant and the treatment variable,
 <<echo=TRUE, print=FALSE>>=
-est <- att(mat, re78 ~ treated, data = Le)
+data(LL)
+mat <- cem(treatment="treated", data=LL, drop="re78")
+est <- att(mat, re78 ~ treated, data = LL)
 est
 @
 where the SATT estimate is the coefficient on the \code{treated}
-variable, in our case \Sexpr{sprintf("%.2f", est$model[1,2])}.  The function
+variable, in our case \Sexpr{sprintf("%.2f", est$att.model["Estimate","treated"])}.  The function
 \code{att} allows for R's standard \code{formula} interface and, by
-default, uses \code{lm} to estimate the model using the weights 
+default, uses a linear model to estimate the att using the weights 
 produced by \code{cem}.  
 
 If exact matching (i.e., without coarsening) was chosen this procedure
@@ -644,13 +646,57 @@ control for the remaining imbalance, we use the \code{formula}
 interface in \code{att}.  For example:
 
 <<echo=TRUE, print=FALSE>>=
-est2 <- att(mat, re78 ~ treated + re74 + re75, data = Le)
+est2 <- att(mat, re78 ~ treated + re74, data = LL)
 est2
 @
 
-The user can also specify \code{glm} modeling in the case of binary,
-count, or other noncontinuous outcome variables.  For more
+The user can also specify the option \code{model} which accepts one of the following string arguments
+\begin{itemize}
+\item \code{linear} or \code{lm} (the default) for linear model, when the treatment effect is supposed to be homogeneous
+<<echo=TRUE, print=FALSE>>=
+att(mat, re78 ~ treated + re74 , data = LL, model="linear")
+@
+\item \code{linear-RE} or \code{lme} for linear model with random effects in cem strata, for non-homogeneous treatment effect
+<<echo=TRUE, print=FALSE>>=
+att(mat, re78 ~ treated + re74 , data = LL, model="linear-RE")
+@
+\item \code{logistic} or \code{logit} for dichotomous response variable\footnote{We do not provide an example here, model the syntax is the same for the other models.},  for homogeneous treatment effect. 
+\item \code{forest} or \code{rf} for random forest  model, also for non-homogeneous treatment effect. It accepts continuous, dichotomous or counting outcomes.
+<<echo=TRUE, print=FALSE>>=
+att(mat, re78 ~ treated + re74 , data = LL, model="forest")
+@
+\end{itemize}
+All the above models run on the CEM matched subsamples, so the quantity of interest may change in case of non-homogeneous treatment effect.
+The option \code{extrapolate}, if set \code{TRUE}, extrapolates each of the above models also to the set of treated units not matched. In this case the quantity of interest is kept fixed but the estimation is more model dependent.
+<<echo=TRUE, print=FALSE>>=
+att(mat, re78 ~ treated + re74 , data = LL, model="linear", extra=TRUE)
+att(mat, re78 ~ treated + re74 , data = LL, model="linear-RE", extra=TRUE)
+att(mat, re78 ~ treated + re74 , data = LL, model="rf", extra=TRUE)
+@
+As Figure \ref{fig:teff} shows, it is also possible to plot the results of the SATT estimation as follows
+<<echo=TRUE, print=FALSE>>=
+est3 <- att(mat, re78 ~ treated + re74 , data = LL)
+est3
+plot(est3, mat, LL, vars=c("education", "age", "re74", "re75"))
+@
+\begin{figure}[Ht]
+\begin{center}
+<<results=tex,echo=FALSE>>= 
+pdf("teff.pdf", width=9, height=6, pointsize=10)
+est3 <- att(mat, re78 ~ treated + re74 + re75, data = LL)
+plot(est3, mat, LL, vars=c("education", "age", "re74", "re75"))
+invisible(dev.off())
+@
+\includegraphics[width=0.9\textwidth]{teff} 
+\end{center}
+\caption{Example of plot of the output of $\tt att$.}
+\label{fig:teff}
+\end{figure}
+For more
 information, see the reference manual entry for \code{att}.
+
+
+
 
 \subsection{Matching and Missing Data}\label{s:mv}
 
@@ -736,6 +782,44 @@ variances, as usual; see \citealt{KinHonJos01}).  The function
 out <- att(mat2, re78 ~ treated, data=imputed)
 out
 @
+
+\subsection{Creating paired samples}
+In same cases, it is useful to apply CEM so some data to create paired matched samples.
+Given an output of \code{cem}, the function \code{pair} produces two sets of indexes corresponding to pair matched units.
+<<echo=TRUE, print=FALSE>>=
+data(LL)
+
+# cem match: automatic bin choice
+mat <- cem(data=LL, drop="re78")
+
+# we want a set of paired units
+psample <- pair(mat, data=LL)
+@
+each pair of observation has a different strata number
+<<echo=TRUE, print=FALSE>>=
+table(psample$paired)
+@
+not all observations can be matched in cem strata
+<<echo=TRUE, print=FALSE>>=
+psample$paired[1:100]
+@
+the remaining observations are then matched and the final list of all paired units is
+contained in the filed \code{full.paired}
+<<echo=TRUE, print=FALSE>>=
+table(psample$full.paired)
+psample$full.paired[1:10]
+@
+When the data contain an even number of units, all units can be paired, if not, the function inform which units has left without a mate.
+<<echo=TRUE, print=FALSE>>=
+# cem match: automatic bin choice, we drop one row from the data set
+mat1 <- cem(data=LL[-1,], drop="re78")
+
+# we want a set of paired units but we have an odd number of units in the data
+psample <- pair(mat1, data=LL[-1,])
+table(psample$full.paired)
+@
+
+
 \clearpage
 
 \section{Reference to CEM's Functions}
@@ -748,6 +832,7 @@ out
 \include{Rd/L1.meas}
 \include{Rd/LL}
 \include{Rd/LeLonde}
+\include{Rd/pair}
 \include{Rd/relax.cem}
 \include{Rd/shift.cem}
 

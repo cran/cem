@@ -1,38 +1,58 @@
 \name{att}
 \alias{att}
+\alias{plot.cem.att}
 \title{Example of ATT estimation from CEM output}
 \description{
 An example of ATT estimation from CEM output
 }
 \usage{
-att(obj, formula, data, model="lm", family="binomial")
+att(obj, formula, data, model="linear", extrapolate=FALSE, ntree=2000)
+\method{plot}{cem.att}(x, obj, data, vars=NULL,...)
 }
 \arguments{
-  \item{obj}{a \code{cem.atch} or \code{multicem} object}
-  \item{data}{a single data.frame or a list of data.frame's in case of \code{multicem}}
-  \item{formula}{formula type specification of model. See Details.}
-  \item{model}{either \code{lm} or \code{glm}. See Details.}
-  \item{family}{used if model is \code{glm}, otherwise ignored.}
+  \item{obj}{a \code{cem.atch} or \code{cem.match.list} object}
+  \item{formula}{a model formula. See Details.}
+  \item{data}{a single data.frame or a list of data.frame's in case of \code{cem.match.list}}
+  \item{model}{one model. See Details.}
+  \item{extrapolate}{extrapolate the CEM restriced estimate to the whole data. Default = \code{FALSE}.}
+  \item{ntree}{number of trees to generate in random forest model. Default = \code{2000}.}
+  \item{x}{the output from the  \code{att} function}
+  \item{vars}{a vector of variable names to be used in the parallel plots. By default all variables
+    involved in data matching are used.}
+  \item{...}{passed to the plot function.}
 }
 \details{
-Argument \code{data} must be a single data frame or a list of (mulitply
-imputed) data frames. 
 
-Argument \code{model} can be \code{lm} or \code{glm} if the outcome
-variable in the ATT estimation is, e.g., a binary outcome. If the
-outcome is \code{y} and the treatment variable is \code{T}, then a
-\code{formula} like \code{y ~ T} is enough to estimate the ATT: it is
-just the coefficient of \code{T}. User can add covariates to span any
+Argument \code{model} can be \code{lm, linear} for linear regression
+model; \code{logit} for the the logistic model;
+\code{lme, linear-RE} for the linear model with random effects. 
+Also \code{rf, forest} for the randomforest algorithm.
+
+If the outcome is \code{y} and the
+treatment variable is \code{T}, then a \code{formula} like \code{y ~ T}
+will produce the simplest estimate the ATT: with lm, it is just the
+coefficient on \code{T}, which is the same as the difference in means,
+weighted by CEM stratum size.  Users can add covariates to span any
 remaining imbalance after the match, such as \code{y ~ T + age + sex},
 to adjust for variables \code{age} and \code{sex}.
 
 In the case of multiply imputed datasets, the model is applied to each
 single matched data and the ATT and is the standard error estimated
 using the standard formulas for combining results of multiply imputed
-data.  } 
+data.  
+
+When \code{extrapolate} = \code{TRUE}, the estimate model is extrapolated
+to the whole set of data.
+
+
+There is a \code{print} method for the output of \code{att}. Specifying the
+option \code{TRUE} in a \code{print} command gives complete output from the
+estimated model when availalble.
+
+}
 \value{
   A matrix of estimates with their standard error, or a list in
-  the case of \code{multicem}.  } 
+  the case of \code{cem.match.list}.  } 
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
   Casual Inference Without Balance Checking,''
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
@@ -47,7 +67,29 @@ mat
 mat$k2k
 
 # ATT estimate
-att(mat, re78~treated,  data=LL)
+homo1 <- att(mat, re78~treated,  data=LL)
+rand1 <- att(mat, re78~treated,  data=LL, model="linear-RE")
+rf1 <- att(mat, re78~treated,  data=LL, model="rf")
+
+homo2 <- att(mat, re78~treated,  data=LL, extra=TRUE)
+rand2 <- att(mat, re78~treated,  data=LL, model="linear-RE", extra=TRUE)
+rf2 <- att(mat, re78~treated,  data=LL, model="rf", extra=TRUE)
+
+homo1
+rand1
+rf1
+
+homo2
+rand2
+rf2
+
+plot( homo1, mat, LL, vars=c("age","education","re74","re75"))
+plot( rand1, mat, LL, vars=c("age","education","re74","re75"))
+plot( rf1, mat, LL, vars=c("age","education","re74","re75"))
+
+plot( homo2, mat, LL, vars=c("age","education","re74","re75"))
+plot( rand2, mat, LL, vars=c("age","education","re74","re75"))
+plot( rf2, mat, LL, vars=c("age","education","re74","re75"))
 
 
 # reduce the match into k2k using euclidean distance within cem strata

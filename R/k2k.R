@@ -52,6 +52,7 @@ k2k <- function(obj, data, method=NULL, mpower=2, verbose=0){
 
 
 idx <- match(nm, rownames(obj$X))
+idx <- idx[which(!is.na(idx))]
 if(length(idx)>0){
  obj$matched[-idx] <- FALSE
  obj$mstrata[-idx] <- NA

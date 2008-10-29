@@ -21,13 +21,13 @@ fi
 
 # create a directory where latex files will take place
 
-if [ ! -d Rd ]
-then
-    mkdir Rd
-#    cp /usr/lib64/R/share/texmf/Rd.sty Rd
-#    cp /usr/lib64/R/share/texmf/upquote.sty Rd
-#    cp /usr/lib64/R/share/texmf/upquote.sty .
-fi
+#if [ ! -d Rd ]
+#then
+#    mkdir Rd
+#    cp /usr/share/R/texmf/Rd.sty Rd
+#    cp /usr/share/R/texmf/upquote.sty Rd
+#    cp /usr/share/R/texmf/upquote.sty .
+#fi
 
 ${R_CMD} CMD BATCH copyRd
 

@@ -1,5 +1,5 @@
 
-R version 2.7.1 (2008-06-23)
+R version 2.8.0 (2008-10-20)
 Copyright (C) 2008 The R Foundation for Statistical Computing
 ISBN 3-900051-07-0
 
@@ -19,15 +19,13 @@ Type 'q()' to quit R.
 
 > getwd() -> wd
 > dir.create(file.path(wd,"Rd"))
-Warning message:
-In dir.create(file.path(wd, "Rd")) :
-  '/tmp/rbuild_18365/cegg/cem/inst/doc/Rd' already exists
 > setwd(file.path(R.home(),"share/texmf"))
+> #setwd(file.path("/usr/share/R/texmf"))
 > file.copy(dir(), file.path(wd,"Rd"),TRUE)
 [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
 > setwd(file.path(wd,"../../man"))
 > file.copy(dir(patt=".Rd"), file.path(wd,"Rd"), TRUE)
- [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
 > file.copy(dir(patt=".sty"), file.path(wd,"Rd"), TRUE)
 Error in file.copy(dir(patt = ".sty"), file.path(wd, "Rd"), TRUE) : 
   no files to copy from

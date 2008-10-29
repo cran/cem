@@ -42,7 +42,6 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
 	    cutpoints[gn[g]] <- NULL   			   
 	  }
 	 }
-	 
    if(!is.null(data) & is.null(datalist)){
      mat <- cem.main(treatment=treatment, data=data, cutpoints = cutpoints,  drop=drop, 
                k2k=k2k, method=method, mpower=mpower, 
@@ -53,6 +52,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
 	mat$grouping <- grouping				  
     return( mat )
    } 
+
 
    if (is.null(datalist) & is.null(data)) 
 	 stop("Specify at list `data' argument", call. = FALSE)
@@ -66,7 +66,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
    nd <- length(datalist)
    list.obj <- vector(nd, mode="list")
 
-       
+
    if(!is.null(data)){
 	n <- dim(data)[1]
     multi.strata <- matrix(NA, n, nd)
@@ -99,10 +99,11 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
 	
 	new.strata <- as.integer(apply(multi.strata, 1, g))
 
-    for(i in 1:nd){
+    for(i in 1){
      obj <- mat
 	 all <- c(1:n + (i-1)*n )
     obj$X <- mat$X[all,]
+	rownames(obj$X) <- rownames(datalist[[i]])
 	obj$strata <- new.strata
     obj$drop <- mat$drop
     obj$breaks <- mat$breaks
@@ -123,18 +124,60 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
         obj$mstrataID <- tmp$mstrataID
         obj$matched <- !is.na(obj$mstrata)
     }
-    if (!is.null(treatment)) 
-        tab <- cem.summary(obj = obj, verbose = verbose)
-    obj$tab <- tab
     obj$imbalance <- imbalance
     obj$k2k <- k2k
     obj$w <- cem.weights(obj)
     class(obj) <- "cem.match"
     if (k2k) 
-        obj <- k2k(obj, datalist[[i]], method = method, mpower = mpower, 
+        obj <- k2k(obj, data=datalist[[i]], method = method, mpower = mpower, 
             verbose = verbose)
+    if (!is.null(treatment)) 
+        tab <- cem.summary(obj = obj, verbose = verbose)
+    obj$tab <- tab
+  	 
 	 list.obj[[i]] <- obj
     }
+
+
+    for(i in 2:nd){
+     obj <- mat
+	 all <- c(1:n + (i-1)*n )
+    obj$X <- mat$X[all,]
+	rownames(obj$X) <- rownames(datalist[[i]])
+	obj$strata <- new.strata
+    obj$drop <- mat$drop
+    obj$breaks <- mat$breaks
+    imbalance <- NULL
+    tab <- NULL
+    obj$treatment <- treatment
+    obj$n <- n
+    if (!is.null(treatment)) {
+        obj$groups <- mat$groups[all]
+        obj$g.names <- levels(obj$groups)
+        obj$n.groups <- length(obj$g.names)
+        obj$group.idx <- sapply(obj$g.names, function(x) which(obj$groups == 
+            x))
+        names(obj$group.idx) <- paste("G", obj$g.names, sep = "")
+        obj$group.len <- unlist(lapply(obj$group.idx, length))
+        tmp <- list.obj[[1]]
+        obj$mstrata <- tmp$mstrata
+        obj$mstrataID <- tmp$mstrataID
+        obj$matched <- tmp$matched
+    }
+    obj$imbalance <- imbalance
+    obj$k2k <- k2k
+    obj$w <- cem.weights(obj)
+    class(obj) <- "cem.match"
+#    if (k2k) 
+#        obj <- k2k(obj, data=datalist[[i]], method = method, mpower = mpower, 
+#            verbose = verbose)
+    if (!is.null(treatment)) 
+        tab <- cem.summary(obj = obj, verbose = verbose)
+    obj$tab <- tab
+  	 
+	 list.obj[[i]] <- obj
+    }
+
 
 	if(eval.imbalance  & !is.null(treatment)){
     avg.data <- datalist[[1]]
@@ -176,7 +219,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
   }
   
    names(list.obj) <- sprintf("match%d",1:nd)
-   class(list.obj) <- c("multicem", "list")
+   class(list.obj) <- c("cem.match.list", "list")
    list.obj$unique <- unique
     
   return(list.obj)
@@ -193,7 +236,7 @@ print.cem.match <- function(x,...){
 }
 
 
-print.multicem <- function(x,...){
+print.cem.match.list <- function(x,...){
  if(x$unique){
   if(!is.null(x[[1]]$tab)){
    print(x[[1]]$tab)

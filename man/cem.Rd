@@ -99,7 +99,7 @@ data set has the same meaning in all, and is the same for all)
 }
 \value{
   Returns an object of class \code{cem.match} if only \code{data} is not 
-  \code{NULL} or an object of class \code{multicem}, which is a list of
+  \code{NULL} or an object of class \code{cem.match.list}, which is a list of
   objects of class \code{cem.match} plus a field called \code{unique} which
   is true only if \code{data} and \code{datalist} are not both \code{NULL}.   
   A \code{cem.match} object is a list
