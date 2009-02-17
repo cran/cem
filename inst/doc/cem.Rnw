@@ -47,7 +47,7 @@ citebordercolor={0 0 1}]{hyperref}
 \author{}
 
 % rbuild: replace 'Version ' '\\' Version
-\date{Version 1.0.80\\ \today}
+\date{Version 1.0.90\\ \today}
 
 %\VignetteIndexEntry{Coarsened Exact Matching}
 %\VignetteDepends{}
@@ -59,36 +59,176 @@ citebordercolor={0 0 1}]{hyperref}
 
 \section{Introduction}
 
-This program is designed to improve the estimation of causal effects
-via a powerful method of matching that is widely applicable in
-observational data and exceptionally easy to understand and use (if
-you understand how to draw a histogram, you will understand this
-method).  The program implements the CEM (Coarsened Exact Matching)
-algorithm.  This algorithm, and its many attractive statistical
-properties, are described in
+\paragraph{Overview}
+This program is designed to improve causal inference via a method of
+matching that is widely applicable in observational data and easy to
+understand and use (if you understand how to draw a histogram, you
+will understand this method).  The program implements the coarsened
+exact matching (CEM) algorithm, described below.  CEM may be used
+alone or in combination with any existing matching method.  This
+algorithm, and its statistical properties, are described in
 \begin{quote}
   Stefano M.\ Iacus, Gary King, and Giuseppe Porro, ``Matching for
   Causal Inference Without Balance Checking'',
   \url{http://gking.harvard.edu/files/abs/cem-abs.shtml}.\nocite{IacKinPor08}
 \end{quote}
-The paper shows that CEM is a monotonoic imbalance bounding (MIB)
-matching method --- which means that the maximum imbalance between the
-treated and control groups is chosen by the user ex ante rather than
-discovered through the usual laborious process of checking after the
-fact and repeatedly reestimating, and so that adjusting the imbalance
-on one variable has no effect on the maximum imbalance of any other.
-CEM also strictly bounds through ex ante user choice both the degree
-of model dependence and the average treatment effect estimation error,
-eliminates the need for a separate procedure to restrict data to
-common empirical support, meets the congruence principle, is robust to
-measurement error, works well with multiple imputation and other
-methods for missing data, can be completely automated, and is
-extremely fast computationally even with very large data sets.  After
-preprocessing data with CEM, the analyst may then use a simple
-difference in means or whatever statistical model they would have
-applied without matching.  CEM also works well for multicategory
-treatments, creating randomized blocks in experimental designs, and
-evaluating extreme counterfactuals.
+
+\paragraph{Properties}
+\citet{IacKinPor08} show that CEM is a monotonoic imbalance bounding
+(MIB) matching method --- which means both that the maximum imbalance
+between the treated and control groups may be chosen by the user ex
+ante, rather than discovered through the usual laborious process of ex
+post checking and repeatedly reestimating, and that adjusting the
+imbalance on one variable has no effect on the maximum imbalance of
+any other.
+
+This paper also shows that CEM bounds through ex ante user choice both
+the degree of model dependence and the average treatment effect
+estimation error, eliminates the need for a separate procedure to
+restrict data to common empirical support, meets the congruence
+principle, is robust to measurement error, works well with multiple
+imputation and other methods for missing data, can be completely
+automated, and is fast computationally even with very large data sets.
+After preprocessing data with CEM, the analyst may then use a simple
+difference in means, or whatever matching method or statistical model
+they would have applied to the raw data.  CEM also works for
+multicategory treatments, creating randomized blocks in experimental
+designs, and evaluating extreme counterfactuals.
+
+\paragraph{Goal}
+Matching is not a method of estimation; it is a way to preprocess a
+data set so that estimation of SATT based on the matched data set will
+be less ``model-dependent'' (i.e., less a function of apparently small
+and indefensible modeling decisions) than when based on the original
+full data set.  Matching involves pruning observations that have no
+close matches on pre-treatment covariates in both the treated and
+control groups.  The result is typically less model-dependence, bias,
+and (by removing heterogeneity) inefficiency
+\citep{KinZen06,HoImaKin07,IacKinPor08}.  If used for analyzing
+observational data, applications of CEM (and all other methods of
+causal inference) require an assumption of ignorability (a.k.a.\ ``no
+omitted variable bias'' or ``no confounding'').
+
+The specific statistical goal is to estimate some version of a causal
+effect, such as the sample average treatment effect on the treated
+(the ``SATT'').  Thus, let $Y_i$ be the dependent variable for unit
+$i$, $T_i$ be a treatment variable, and $X_i$ be a vector of
+pre-treatment control variables.  Although CEM works as easily with
+multicategory treatment variables, we simplify this introductory
+description by assuming that $T_i$ is dichotmous and takes on the
+value 1 for ``treated'' units and 0 for ``control'' units.  Then
+define the treatment effect for treated units as the difference
+between two potential outcomes: $\text{TE}_i = Y_i(T_i=1) -
+Y_i(T_i=0)$, where $Y_i(T_i=1) = Y_i$ is always obseved and
+$Y_i(T_i=0)$, the value that $Y_i$ would have taken on if it were the
+case that $T_i=0$, is always unobserved.  Then $Y_i(T_i=0)$ is
+estimated with $Y_j$ from matched controls (i.e., among units for
+which $X_i\approx X_j$), either directly, $\hat Y_i(T_i=0) =
+Y_j(T_j=0)$, or via a model, $\hat Y_i(T_i=0) = \hat g(X_j)$.  Then
+SATT can be computed as a simple average: $\text{SATT} = \frac{1}{n_T}
+\sum_{i\in\{T_i=1\}} \text{TE}_i$.
+
+\paragraph{Algorithm}
+The CEM algorithm then involves three steps:
+\begin{enumerate}
+\item \emph{Temporarily} coarsen each control variable in $X$ as much
+  as you are willing, for the purposes of matching.  For example,
+  years of education might be coarsened into grade school, middle
+  school, high school, college, graduate school.  Most researchers are
+  intimately familiar with the concept and practice of coarsening, as
+  it is widely used in applied data analyses in many fields, although
+  unlike its present use coarsening for data analysis involves a
+  permanent removal of information from the analysis and ultimate
+  estimates.
+
+\item Sort all units into strata, each of which has the same values of
+  the coarsened $X$.
+
+\item Prune from the data set the units in any stratum that do not
+  include at least one treated and one control unit.
+\end{enumerate}
+
+Following these three steps, the researcher can apply any method to
+the matched data that they might have to the raw data to estimate the
+causal effect, with the addition of a weight that equalizes the number
+of treated and control units within each stratum.  Thus, any existing
+method of matching may be used within CEM strata to further prune the
+data in other ways, in which case the combined approach still inherits
+all of CEM's properties.  Whether or not another method of matching is
+applied, one must compute the causal effect, either by a (weighted)
+difference in means in $Y$ among the treated and control units, or
+with the application of a statistical model.
+
+If the coarsened bins are set to zero width, then CEM returns the
+exact matching solution, in which case model dependence will be
+eliminated (other than the ignorability assumption), but too few
+observations may be left.  If instead the coarsened bins are set too
+wide, then few observations will be discarded, but differences within
+the large strata must be spanned with a statistical model, in which
+case model dependence may be an issue.
+
+What if the level of coarsening is set as large as the researcher
+finds reasonable, but the number of observations is still too small?
+This of course may happen with a single continuous covariate with
+little or no coarsening or due to higher order interactions among a
+large set of discrete covariates.  We offer below a ``progressive
+coarsening'' procedure that may help you rethink some of your
+coarsening choices by indicating how many more observations you would
+recover by loosening up the coarsening level for each variable.  But
+if the problem remains, the only possibilites involve collecting more
+data; setting the coarsening level artificially large and relying on
+theory to rule out some of the model dependence; or living with the
+model dependence and increasing the uncertainty with which you draw
+your inferences and represent your conclusions.  To be clear, in this
+situation, you are in a bind and neither CEM nor any other method of
+matching or analysis will save you.  Statistics of course is not magic
+and can only get you so far given limited information.  When in this
+situation, it is best to recognize the limits of your data relative to
+the question you are asking, and decide whether to devote whatever
+resources at your disposal to collecting more data, developing better
+theory, dealing with the uncertainty, or choosing a different research
+project.
+
+\paragraph{Measuring Balance}
+Although CEM is MIB, the actual degree of imbalance achieved in the
+matched sample may be lower than the chosen maximum, and so we also
+introduce a simple and comprehensive \emph{multivariate} imbalance
+measure \citep{IacKinPor08}.  The measure is based on the $L_1$
+difference between the multidimensional histogram of all pretreatment
+covariates in the treated group and that in the control group.  To do
+this, we first choose the number of bins for each continuous variable
+via standard automated univariate histogram methods and with
+categorical variables left as is.  These bin sizes must be defined
+separately from and prior to the coarsening levels chosen for CEM.
+Although this initial choice poses all the usual issues and potential
+problems when choosing bins in drawing histograms, we use it only as a
+fixed reference to evaluate pre and post matching imbalance.  Our
+functions compute these bin sizes automatically using automated
+histogram methods (and with smaller bins than would typically be
+chosen in running CEM), or they can optionally be set by the user, so
+long as this level is fixed through all subseqent matching.  Then, we
+cross-tabulate the discretized variables as $X_1\times \dots \times
+X_k$ for the treated and control groups separately, and record the
+$k$-dimensional relative frequencies for the treated $f_{\ell_1\cdots
+  \ell_k}$ and control $g_{\ell_1\cdots \ell_k}$ units.  Finally, our
+measure of imbalance is the absolute difference over all the cell
+values:
+\begin{equation}
+  \mathcal L_1(f,g) = \frac12 \sum_{\ell_1  \cdots \ell_k} 
+  |f_{\ell_1\cdots \ell_k} - g_{\ell_1\cdots \ell_k}|
+  \label{eq:L1}
+\end{equation}
+and where the summation is over all cells of the multivariate
+histogram, but is feasible to compute because it contains at most $n$
+nonzero terms.  The $\mathcal L_1$ measure\footnote{Prior to version 1.0.90 of the \pkg{cem} package the $\mathcal L_1$ measure did not include the factor $\frac12$.} varies in $[0,1]$.
+Perfect (up to discretization) global balance result in $\mathcal
+L_1=0$, and $\mathcal L_1=1$ indicates complete separation of the multimensional
+histograms. Any value in the interval $(0,1)$  indicates the amount of difference  between $k$-dimensional frequencies of the
+two groups. 
+
+CEM also offers several other measures of imbalance such as the global
+difference in means and the difference in means within the strata that
+are defined by every matching method.
 
 \section{Setup}
 
@@ -158,9 +298,7 @@ selected individuals for 12-18 months and help finding a job in the
 hopes of increasing their' earnings.  The treatment variable,
 \code{treated}, is 1 for participants (the treatment group) and 0 for
 nonparticipants (the control group).  The key outcome variable is
-earnings in 1978 (\code{re78}).  The statistical goal is to estimate a
-specific version of a causal effect: the sample average treatment
-effect on the treated (the ``SATT'').
+earnings in 1978 (\code{re78}).  
 
 Since participation in the program was not assigned strictly at
 random, we must control for a set of pretreatment variables by the CEM
@@ -185,16 +323,6 @@ randomly by us to illustrate how CEM deals with missingness).  We call
 this new data set the \code{LeLonde} (intentionally misspelling
 Lalonde); the original, unmodified \citet{Lalonde86} data are
 contained in data set \code{LL}.
-
-Matching is not a method of estimation; it is a way to preprocess a
-data set so that estimation of SATT based on the matched data set will
-be less ``model-dependent'' (i.e., less a function of apparently small
-and indefensible modeling decisions) than when based on the original
-full data set.  Matching involves pruning observations that have no
-close matches on pre-treatment covariates in both the treated and
-control groups.  The result is typically less model-dependence, bias,
-and (by removing heterogeneity) inefficiency
-\citep{KinZen06,HoImaKin07,IacKinPor08}.
 
 \subsection{Basic Evaluation and Analysis of Unmatched Data}\label{s:basic}
 
@@ -241,20 +369,7 @@ vars <- c("age", "education", "black", "married", "nodegree", "re74",
 "re75", "hispanic", "u74", "u75","q1")
 @
 
-The overall imbalance is given by the $\mathcal L_1$ statistic,
-introduced in \citet{IacKinPor08} as a comprehensive measure of global
-imbalance.  It is based on the $L_1$ difference between the
-multidimensional histogram of all pretreatment covariates in the
-treated group and that in the control group.  Perfect global balance
-is indicated by $\mathcal L_1=0$, and larger values indicate larger
-imbalance between the groups.  To use this measure, we require a list
-of bin sizes for the numerical variables.  Our functions compute these
-automatically, or they can be set by the user.\footnote{Of
-  course, as with drawing histograms, the choice of bins affects the
-  final result.  The important thing is to choose one and keep it the
-  same throughout to allow for fair comparisons.  The particular
-  choice is less crucial.}
-
+The overall imbalance is given by the $\mathcal L_1$ statistic:
 <<echo=FALSE, print=FALSE>>=
 L1 <- L1.meas(Le$treated, Le[vars])$L1 
 @
@@ -268,7 +383,7 @@ imbalance(group=Le$treated, data=Le[vars])
 @ 
   
 Only the overall $\mathcal L_1$ statistic measure includes imbalance
-with respect to the full joint distribution, including all
+with respect to the joint distribution, including all
 interactions, of the covariates; in the case of our example, $\mathcal
 L_1=$\Sexpr{sprintf("%.3f", L1)}.  The unidimensional measures in the
 table are all computed for each variable separately.
@@ -397,13 +512,15 @@ The function \code{cem} treats categorical and numerical
 variables differently.
 
 For \emph{categorical} variables, we use the \code{grouping} option.
-For example, in variable \code{q1} may want to set this option such
-that we form three separate groups like this:
- 
+For example, variable \code{q1} has the following levels
+<<echo=TRUE, print=FALSE>>=
+levels(Le$q1)
+@
+Notice that the levels are not ordered in the original data set. One can possibly tranform the variable \code{q1} from \code{factor} to ordered factor using the command \code{ordered} in \R{} or
+may want to group them in three groups as follows: 
 <<echo=TRUE, print=FALSE>>=
 q1.grp <- list(c("strongly agree", "agree"), c("neutral","no opinion"), c("strongly disagree","disagree"))
 @
-
 For \emph{numerical} variables, we use the \code{cutpoints} option.
 Thus, for example, in the US educational system, the following
 discretization of years of education corresponds to different levels
@@ -460,12 +577,12 @@ that it is substantively appropriate to coarsen further, then just
 increase the coarsening (by using fewer cutpoints).  The result will
 be additional matches and of course a concommitant increase in the
 maximum possible imbalance between the treated and control groups.
-This is easy with CEM because, unlike most other methods, CEM is a
-monotonic imbalance bounding (MIB) method, which means that increasing
-the imbalance on one variable (through a change in coarsening) will
-not change the maximum imbalance on any other variable.  MIB thus
-enables you to tinker with the solution one variable at a time to
-quickly produce a satisfactory result, if one is feasible.
+This is easy with CEM because CEM is a monotonic imbalance bounding
+(MIB) method, which means that increasing the imbalance on one
+variable (by widening the coarsened bin sizes) will not change the
+maximum imbalance on any other variable.  MIB thus enables you to
+tinker with the solution one variable at a time to quickly produce a
+satisfactory result, if one is feasible.
 
 If, however, you feel that additional coarsening is not appropriate,
 than too few obserations may indicate that your data contains
@@ -482,6 +599,16 @@ automatically, to prune equivalent solutions, and to present them in a
 convenient manner so that users can ascertain where the difficulties
 in matching in these data can be found and what choices would produce
 which outcomes in terms of the numbers of observations matched.
+
+For categorical variables, the algorithm considers the numerical values
+associated to each level of the variable. In \R{} the numerical values associated to
+the levels go from 1 to the number of levels, say $k$. The coarsening occurs by
+partitioning the interval $[1,k]$ into intervals of growing size starting from, say, $\epsilon=1$.
+So in all cases, coarsening occurs by grouping adjacent levels from ``left'' to ``right''.
+This is of course not completely appropriate for pure unordered categorical variables, but to
+treat them in a proper way additional combinatorics would be necessary. The progressive
+coarsening is instead intended as an instrument which gives a feeling on which variable
+is more likely to prevent matching for a given data set.
 
 We start by illustrating what happens when we relax a CEM solution
 ``by hand''.  The following three runs show the effect on the matching
@@ -574,7 +701,7 @@ invisible(dev.off())
 \label{fig:coarsen2}
 \end{figure}
 
-\subsection{Restricting the matching solution to a $k$-to-$k$ match}
+\subsection{Restricting the Matching Solution to a $k$-to-$k$ Match}
 
 By default, CEM uses maximal information, resulting in strata that may
 include different numbers of treated and control units.  To compensate
@@ -808,8 +935,9 @@ contained in the filed \code{full.paired}
 <<echo=TRUE, print=FALSE>>=
 table(psample$full.paired)
 psample$full.paired[1:10]
-@
-When the data contain an even number of units, all units can be paired, if not, the function inform which units has left without a mate.
+@ When the data contain an even number of units, all units can be
+paired; if they cannot be paired, the function indicates which units are
+left without a mate.
 <<echo=TRUE, print=FALSE>>=
 # cem match: automatic bin choice, we drop one row from the data set
 mat1 <- cem(data=LL[-1,], drop="re78")

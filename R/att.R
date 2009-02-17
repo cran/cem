@@ -35,8 +35,8 @@ plot.cem.att <- function(x, obj, data, vars=NULL,...){
   q3 <- s
   level <- rep("zero", length(x$TE))
   cols <-  rep("black", length(x$TE))
-  level[which(x$TE <= q1)] <- "low"
-  level[which(x$TE >= q3)] <- "high"
+  level[which(x$TE <= q1)] <- "negative"
+  level[which(x$TE >= q3)] <- "positive"
   cols[which(x$TE <= q1)] <- "blue"
   cols[which(x$TE >= q3)] <- "red"
   ord <- order(x$TE)
@@ -66,19 +66,19 @@ plot.cem.att <- function(x, obj, data, vars=NULL,...){
     tmp <- as.data.frame(tmp)     
   }
   rownames(tmp) <- stID
-  tmp$level <- factor(level,levels=c("low","zero","high"),ord=TRUE)   
+  tmp$level <- factor(level,levels=c("negative","zero","positive"),ord=TRUE)   
   p21 <- NULL
   p22 <- NULL
   p23 <- NULL
-  n.low <- length(which(level=="low"))
+  n.low <- length(which(level=="negative"))
   n.zero <- length(which(level=="zero"))
-  n.high <- length(which(level=="high"))
+  n.high <- length(which(level=="positive"))
   if(n.low>0)
-   p21 <- parallel(~ tmp[use.vars], subset=level=="low", tmp, main="low",alpha=1.5/n.low, col="blue")
+   p21 <- parallel(~ tmp[use.vars], subset=level=="negative", tmp, main="negative",alpha=1.5/n.low, col="blue")
   if(n.zero>0)
    p22 <- parallel(~ tmp[use.vars], subset=level=="zero", tmp, main="zero",alpha=1.5/n.zero, col="black")
   if(n.high>0)
-   p23 <- parallel(~ tmp[use.vars], subset=level=="high",  tmp, main="high",alpha=1.5/n.high, col="red")
+   p23 <- parallel(~ tmp[use.vars], subset=level=="positive",  tmp, main="positive",alpha=1.5/n.high, col="red")
   plot(p1, split=c(1,1,1,2))
   if(!is.null(p21))
    plot(p21, split=c(1,2,3,2), newpage=FALSE)
@@ -208,6 +208,7 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
    data1$allID <- factor(obj$strata)
    data1$cemID <- factor(obj$mstrata)
    data1$matched <- obj$matched
+   matched <- obj$matched
    f1 <- formula(sprintf(" ~ %s | allID",obj$treatment))   
    f2 <- formula(sprintf(" ~ %s | cemID",obj$treatment))   
 

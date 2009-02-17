@@ -1,6 +1,6 @@
 Package: cem
-Version: 1.0.80
-Date: 2008-10-29
+Version: 1.0.90
+Date: 2009-02-17
 Title: CEM: Software for Coarsened Exact Matching
 Author: Stefano Iacus <stefano.iacus@unimi.it>
          Gary King <king@harvard.edu>
@@ -14,4 +14,4 @@ Description: This program implements the coarsened exact matching algorithm
 License: GPL-2
 URL: http://gking.harvard.edu/cem
 Suggests: Amelia, MatchIt
-Packaged: Wed Oct 29 15:45:00 2008; king
+Packaged: Tue Feb 17 15:48:28 2009; king

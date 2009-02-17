@@ -37,58 +37,66 @@ L1.meas <- function(group, data, drop=NULL, breaks=NULL, weights){
 
 
 cem.imbalance <- function(group, data, collapsed=TRUE, reduced=TRUE, breaks=NULL, weights){
- lv <- unique(na.omit(group))
+    lv <- unique(na.omit(group))
+    if (length(lv) > 2) 
+        stop("more than 2 groups")
+    if (is.null(breaks)) {
+        vars <- colnames(data)
+        nv <- length(vars)
+        breaks <- vector(nv, mode = "list")
+        for (i in 1:nv) {
+            if (is.numeric(data[[i]]) | is.integer(data[[i]])) 
+                breaks[[i]] <- pretty(range(data[[i]], na.rm = TRUE), 
+                  n = nclass.scott(na.omit(data[[i]])), 1)
+            names(breaks) <- vars
+        }
+    }
+    if (!reduced) {
+        tmp <- reduce.data(data, collapse = TRUE, breaks = breaks)
+        data <- tmp$data
+        new.breaks <- tmp$breaks
+        collapsed <- TRUE
+    }
+    if (!collapsed) 
+        data <- collapse.data(data)
 
+    n <- length(data)
+	
+    if (missing(weights)) {
+        weights <- rep(1, n)
+    }
 
- if(length(lv)>2)
-  stop("more than 2 groups")
-   
- if(is.null(breaks)){
-  vars <- colnames(data)
-  nv <- length(vars)
-  breaks <- vector(nv, mode="list")
-  for(i in 1:nv){
-   if(is.numeric(data[[i]]) | is.integer (data[[i]]))
-    breaks[[i]] <- pretty(range(data[[i]],na.rm=TRUE), n=nclass.scott(na.omit(data[[i]])), 1)
-   names(breaks) <- vars
-  }
- }  
- 
- if(!reduced){
-  tmp <- reduce.data(data, collapse=TRUE, breaks=breaks)
-  data <- tmp$data
-  new.breaks <- tmp$breaks
-  collapsed <- TRUE
- }  
- if(!collapsed)
-  data <- collapse.data(data)
-  
- n <- length(data)
- if(missing(weights)){
-  weights <- rep(1, n)
- }
+	keep <- which(weights>0) 
+    tmp <- data.frame(data[keep], group[keep])
+	tab1 <- table(tmp)
+ 	rowSums(tab1) -> tmp
+	LCS <- length(which(tmp>1))/length(tmp)
 
- idx1 <- which(group==lv[1])
- idx2 <- which(group==lv[2])
+    idx1 <- which(group == lv[1])
+    idx2 <- which(group == lv[2])
+    n1 <- sum(weights[idx1])
+    n2 <- sum(weights[idx2])
+    weights[idx1] <- weights[idx1]/n1
+    weights[idx2] <- weights[idx2]/n2
 
- n1 <- sum(weights[idx1])
- n2 <- sum(weights[idx2])
+    data <- as.integer(factor(data))
 
- tab <- table(data)
- cell <- attr(tab, "dimnames")[[1]]
- L1 <- 0
+    tab <- unique(data)
 
- for(i in cell){
-  idx <- as.numeric(which(data == i))   
-  jdx1 <- intersect(idx, idx1)
-  jdx2 <- intersect(idx, idx2)
-  m1 <- sum(weights[jdx1])/n1
-  m2 <- sum(weights[jdx2])/n2
-  L1 <- L1 + abs(m1-m2) 
- }
- out <- list(L1=L1, breaks=new.breaks)
- class(out) <- "L1.meas"
- return(out)
+    ff <- function(i) {
+        jdx1 <- which((data == i) & (group == lv[1]))
+        jdx2 <- which((data == i) & (group == lv[2]))
+        abs(sum(weights[jdx1])- sum(weights[jdx2]))
+    }
+
+    aa <- sapply(tab, ff, USE.NAMES= FALSE)
+
+    L1 <- sum(aa)/2
+	
+	
+    out <- list(L1 = L1, breaks = new.breaks, LCS = 100*LCS)
+    class(out) <- "L1.meas"
+    return(out)
 }
 
 
@@ -192,5 +200,6 @@ print.imbalance <- function(x,...){
 
 
 print.L1.meas <- function(x,...){
- cat(sprintf("\nMultivariate Imbalance Measure: L1=%f\n\n", x$L1))
+ cat(sprintf("\nMultivariate Imbalance Measure: L1=%.3f", x$L1))
+ cat(sprintf("\nPercentage of local common support: LCS=%.1f%%\n\n", x$LCS))
 }

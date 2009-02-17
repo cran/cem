@@ -26,11 +26,16 @@ this case, breaks are used to calculate the L1 measure.
 
 If \code{breaks} is missing, the default rule to calculate cutpoints
 is the Scott's rule. 
+
+This code also calculate the Local Common Support (LCS) measure, which is
+the proportion of non empty k-dimensional cells of the histogram which
+contain at least one observation per group.
 }
 \value{
   An object of class \code{L1.meas} which is a list with the following fields
+  \item{L1}{The numerical value of the L1 measure}
   \item{breaks}{A list of cutpoints used to calculate the L1 measure}
-  \item{value}{The numerical value of the L1 measure}
+  \item{LCS}{The numerical value of the Local Common Support proportion}
 }
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
   Casual Inference Without Balance Checking,''
