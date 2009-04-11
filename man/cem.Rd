@@ -172,8 +172,8 @@ if(require(Amelia)){
  invisible(sapply(idx, function(x) LL1[x,sample(2:k,1)] <<- NA))
 
  imputed <- amelia(LL1,noms=c("black","hispanic","treated","married",
-                              "nodegree","u74","u75"))[1:5] 
-
+                              "nodegree","u74","u75")) 
+ imputed <- imputed$imputations[1:5]
 # without information on which observation has missing values
  mat1 <- cem("treated", datalist=imputed, drop="re78")
  mat1

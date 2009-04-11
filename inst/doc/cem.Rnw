@@ -43,11 +43,22 @@
 pdfstartview=FitH, breaklinks=true, urlbordercolor={0 1 0},
 citebordercolor={0 0 1}]{hyperref}
 
-\title{CEM: Software for Coarsened Exact Matching}
-\author{}
+\title{CEM: Software for Coarsened Exact Matching\thanks{Forthcoming,
+    \emph{Journal of Statistical Software}}}
+\author{Stefano M.\ Iacus\thanks{Department of Economics, Business and
+    Statistics, University of Milan, Via Conservatorio 7, I-20124
+    Milan, Italy; stefano.iacus@unimi.it}
+\and %
+Gary King\thanks{Institute for Quantitative Social Science, 1737
+  Cambridge Street, Harvard University, Cambridge MA 02138;
+  \url{http://GKing.harvard.edu}, king@harvard.edu, (617) 495-2027.}
+\and %
+Giuseppe Porro\thanks{Department of Economics and Statistics,
+  University of Trieste, P.le Europa 1, I-34127 Trieste, Italy;
+  giuseppe.porro@econ.units.it.} }
 
 % rbuild: replace 'Version ' '\\' Version
-\date{Version 1.0.90\\ \today}
+\date{Version 1.0.96\\ \today}
 
 %\VignetteIndexEntry{Coarsened Exact Matching}
 %\VignetteDepends{}
@@ -79,8 +90,8 @@ algorithm, and its statistical properties, are described in
 between the treated and control groups may be chosen by the user ex
 ante, rather than discovered through the usual laborious process of ex
 post checking and repeatedly reestimating, and that adjusting the
-imbalance on one variable has no effect on the maximum imbalance of
-any other.
+maximum imbalance on one variable has no effect on the
+maximum imbalance of any other.
 
 This paper also shows that CEM bounds through ex ante user choice both
 the degree of model dependence and the average treatment effect
@@ -175,19 +186,19 @@ large set of discrete covariates.  We offer below a ``progressive
 coarsening'' procedure that may help you rethink some of your
 coarsening choices by indicating how many more observations you would
 recover by loosening up the coarsening level for each variable.  But
-if the problem remains, the only possibilites involve collecting more
-data; setting the coarsening level artificially large and relying on
-theory to rule out some of the model dependence; or living with the
-model dependence and increasing the uncertainty with which you draw
-your inferences and represent your conclusions.  To be clear, in this
-situation, you are in a bind and neither CEM nor any other method of
-matching or analysis will save you.  Statistics of course is not magic
-and can only get you so far given limited information.  When in this
-situation, it is best to recognize the limits of your data relative to
-the question you are asking, and decide whether to devote whatever
-resources at your disposal to collecting more data, developing better
-theory, dealing with the uncertainty, or choosing a different research
-project.
+if the remaining sample is still too small, the only possibilites
+involve collecting more data; setting the coarsening level
+artificially large and relying on theory to rule out some of the model
+dependence; or living with the model dependence and increasing the
+uncertainty with which you draw your inferences and represent your
+conclusions.  To be clear, in this situation, you are in a bind and no
+method of matching or analysis is likely to save you.  Statistics of
+course is not magic and can only get you so far given limited
+information.  When in this situation, it is best to recognize the
+limits of your data relative to the question you are asking, and
+decide whether to devote whatever resources at your disposal to
+collecting more data, developing better theory, dealing with the
+uncertainty, or choosing a different research project.
 
 \paragraph{Measuring Balance}
 Although CEM is MIB, the actual degree of imbalance achieved in the
@@ -535,10 +546,11 @@ Graduate school & $>$16
 \end{tabular}
 \end{center}
 Using these natural breaks in the data to create the coarsening is
-generally a good approach and certainly better than using fixed bin
-sizes (as in caliper matching) that disregard these meaningful breaks.
-Because in our data, no respondents fall in the last
-category,
+generally a good approach and usually better than caliper matching in
+this context, as it would disregard these meaningful breaks.  (The
+venerable technique of caliper matching of course may be useful for
+certain other types of data.)  Because in our data, no respondents
+fall in the last category,
 
 <<echo=TRUE, print=FALSE>>=
 table(Le$education)
@@ -879,7 +891,8 @@ multiply imputed data sets:
 require(Amelia)
 set.seed(123)
 imputed <- amelia(LeLonde,noms=c("black","hispanic","treated","married","nodegree",
-"u74","u75","q1"))[1:5]
+"u74","u75","q1"))
+imputed <- imputed$imputations[1:5]
 @
 
 Now \code{imputed} contains a list of 5 multiply imputed versions of

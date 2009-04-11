@@ -115,7 +115,8 @@ if(require(Amelia)){
  invisible(sapply(idx, function(x) LL1[x,sample(2:k,1)] <<- NA))
 
 
- imputed <- amelia(LL1)[1:5] 
+ imputed <- amelia(LL1) 
+ imputed <- imputed$imputations[1:5]
 
  mat <- cem("treated", datalist=imputed, data=LL1, drop="re78")
 
