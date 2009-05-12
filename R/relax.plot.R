@@ -59,8 +59,9 @@ relax.plot <- function(tab, group="1", max.terms=50, perc=.5, unique=FALSE, colo
      text(1:max, par("usr")[3] - 0.35, srt = 45, adj = 1,
           labels = labx[(n-max+1):n], xpd = TRUE, cex=0.75, col=var[(n-max+1):n])
  
-     text(1:max,  PercG1[(n-max+1):n], adj=-0.35, 
-      labels= sprintf("%3.2f", L1[(n-max+1):n]), srt=-45, cex=0.75)
+     if(!any(is.na(L1)))
+	   text(1:max,  PercG1[(n-max+1):n], adj=-0.35, 
+         labels= sprintf("%3.2f", L1[(n-max+1):n]), srt=-45, cex=0.75)
  
      mtext("number of matched", 4, line=3)
 	 mtext("% matched",2,line=4)

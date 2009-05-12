@@ -46,7 +46,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
      mat <- cem.main(treatment=treatment, data=data, cutpoints = cutpoints,  drop=drop, 
                k2k=k2k, method=method, mpower=mpower, 
 			   verbose = verbose)
- 	 if(eval.imbalance & !is.null(treatment))
+ 	 if(eval.imbalance & !is.null(treatment) & length(which(mat$matched==TRUE)>0))
 	  mat$imbalance <- imbalance(mat$groups, data=L1data, drop=mat$drop, breaks=L1.breaks,
 	                  weights=mat$w)
 	mat$grouping <- grouping				  

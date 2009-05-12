@@ -7,7 +7,7 @@ Diagnostic tools for CEM
 }
 \usage{
 relax.cem(obj, data, depth=1, verbose = 1, L1.breaks=NULL, plot=TRUE, fixed=NULL, 
- shifts=NULL, minimal=NULL, use.coarsened=TRUE, ...)
+ shifts=NULL, minimal=NULL, use.coarsened=TRUE, eval.imbalance=TRUE, ...)
 relax.plot(tab, group="1", max.terms=50, perc=.5, unique=FALSE, colors=TRUE)
 }
 \arguments{
@@ -29,6 +29,7 @@ relax.plot(tab, group="1", max.terms=50, perc=.5, unique=FALSE, colors=TRUE)
   dropping) two vars, etc.}
   \item{use.coarsened}{used coarsened values for continuous variables.}
   \item{colors}{If \code{TRUE} each variable is plotted in a different colour.}
+  \item{eval.imbalance}{If \code{TRUE} L1 measure is evaluated at each iteration.}
   \item{...}{passed to the \code{relax.plot} function.}
 }
 

@@ -26,25 +26,28 @@ print.cem.att <- function(x,full=FALSE,...){
 
 
 
-plot.cem.att <- function(x, obj, data, vars=NULL,...){
+plot.cem.att <- function(x, obj, data, vars=NULL, plot=TRUE, ecolors,...){
  if(!is.null(x$TE)){
   s <-  x$att.model["Std. Error", obj$treatment]
 #  q1 <- quantile(x$TE, 0.25)
 #  q3 <- quantile(x$TE, 0.75)
   q1 <- -s
   q3 <- s
+  if(missing(ecolors))
+	 ecolors <- c("blue","black","red")
   level <- rep("zero", length(x$TE))
-  cols <-  rep("black", length(x$TE))
+  cols <-  rep(ecolors[2], length(x$TE))
   level[which(x$TE <= q1)] <- "negative"
   level[which(x$TE >= q3)] <- "positive"
-  cols[which(x$TE <= q1)] <- "blue"
-  cols[which(x$TE >= q3)] <- "red"
+  cols[which(x$TE <= q1)] <- ecolors[1]
+  cols[which(x$TE >= q3)] <- ecolors[3]
   ord <- order(x$TE)
    if(x$extrapolate)
     title <- sprintf("\n%s with extrapolation\n\n",x$mod.type)
    else
     title <- sprintf("\n%s on CEM matched data\n\n",x$mod.type)
-   p1 <- dotplot(x$TE[ord], main=title,xlab="Treatment Effect",ylab="CEM Strata",col=cols[ord])
+   if(plot)
+	 p1 <- dotplot(x$TE[ord], main=title,xlab="Treatment Effect",ylab="CEM Strata",col=cols[ord])
   }
 
   stID <- names(x$TE)
@@ -73,19 +76,32 @@ plot.cem.att <- function(x, obj, data, vars=NULL,...){
   n.low <- length(which(level=="negative"))
   n.zero <- length(which(level=="zero"))
   n.high <- length(which(level=="positive"))
-  if(n.low>0)
-   p21 <- parallel(~ tmp[use.vars], subset=level=="negative", tmp, main="negative",alpha=1.5/n.low, col="blue")
-  if(n.zero>0)
-   p22 <- parallel(~ tmp[use.vars], subset=level=="zero", tmp, main="zero",alpha=1.5/n.zero, col="black")
-  if(n.high>0)
-   p23 <- parallel(~ tmp[use.vars], subset=level=="positive",  tmp, main="positive",alpha=1.5/n.high, col="red")
-  plot(p1, split=c(1,1,1,2))
-  if(!is.null(p21))
-   plot(p21, split=c(1,2,3,2), newpage=FALSE)
-  if(!is.null(p22))
-   plot(p22, split=c(2,2,3,2), newpage=FALSE)
-  if(!is.null(p23))
-   plot(p23, split=c(3,2,3,2), newpage=FALSE)
+  if(plot){
+	if(n.low>0)
+	  p21 <- parallel(~ tmp[use.vars], subset=level=="negative", tmp, main="negative",alpha=1.5/n.low, col="blue")
+    if(n.zero>0)
+      p22 <- parallel(~ tmp[use.vars], subset=level=="zero", tmp, main="zero",alpha=1.5/n.zero, col="black")
+    if(n.high>0)
+      p23 <- parallel(~ tmp[use.vars], subset=level=="positive",  tmp, main="positive",alpha=1.5/n.high, col="red")
+    plot(p1, split=c(1,1,1,2))
+    if(!is.null(p21))
+      plot(p21, split=c(1,2,3,2), newpage=FALSE)
+    if(!is.null(p22))
+      plot(p22, split=c(2,2,3,2), newpage=FALSE)
+	if(!is.null(p23))
+      plot(p23, split=c(3,2,3,2), newpage=FALSE)
+  }
+  names(level) <- stID	
+  match( obj$mstrata, stID ) -> idx
+  tmp1 <- level[idx]
+  names(tmp1) <- rownames(obj$X)	
+  tmp2 <- x$TE[idx]
+  names(tmp2) <- rownames(obj$X)	
+  names(cols) <- stID
+  tmp3 <- cols[idx]	
+  names(tmp3) <- rownames(obj$X)		
+  return(invisible(list(st.egroup=level, st.TE=x$TE, st.ecol=cols, 
+						 ind.egroup=tmp1, ind.TE=tmp2, ind.ecol=tmp3)))	
 }
 
 
@@ -477,5 +493,20 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
  out <- list(mult=est, att.model = att.model, treatment=obj[[1]]$treatment, extrapolate=extrapolate, mod.type=mod.type, TE=TE) 
  class(out) <- "cem.att"
  out
+}
+
+
+summary.cem.att <- function(object, ...) {
+	if(class(object) == "cem.att"){
+		cat("\nTreatment effect estimation for data:\n\n")
+		print(object$tab)
+		
+		if(object$extrapolate)
+		cat(sprintf("\n%s estimated on all data\n\nCoefficients:\n",object$mod.type))  
+		else
+		cat(sprintf("\n%s estimated on matched data only\n\nCoefficients:\n",object$mod.type))  
+		mod <- t(object$att.model) 
+		printCoefmat(mod,has.Pvalue=TRUE, ...)
+	}
 }
 

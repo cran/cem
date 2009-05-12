@@ -14,6 +14,7 @@ S3method(print, L1.meas)
 S3method(print, cem.match)
 S3method(print, cem.match.list)
 S3method(print, cem.att)
+S3method(summary, cem.att)
 
 
 

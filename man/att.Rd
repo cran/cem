@@ -1,25 +1,31 @@
 \name{att}
 \alias{att}
 \alias{plot.cem.att}
+\alias{summary.cem.att}
 \title{Example of ATT estimation from CEM output}
 \description{
 An example of ATT estimation from CEM output
 }
 \usage{
 att(obj, formula, data, model="linear", extrapolate=FALSE, ntree=2000)
-\method{plot}{cem.att}(x, obj, data, vars=NULL,...)
+\method{plot}{cem.att}(x, obj, data, vars=NULL, plot=TRUE, ecolors, ...)
+\method{summary}{cem.att}(object, ...)
 }
 \arguments{
-  \item{obj}{a \code{cem.atch} or \code{cem.match.list} object}
+  \item{obj}{a \code{cem.match} or \code{cem.match.list} object}
   \item{formula}{a model formula. See Details.}
   \item{data}{a single data.frame or a list of data.frame's in case of \code{cem.match.list}}
   \item{model}{one model. See Details.}
   \item{extrapolate}{extrapolate the CEM restriced estimate to the whole data. Default = \code{FALSE}.}
   \item{ntree}{number of trees to generate in random forest model. Default = \code{2000}.}
-  \item{x}{the output from the  \code{att} function}
+  \item{x}{the output from the \code{att} function}
   \item{vars}{a vector of variable names to be used in the parallel plots. By default all variables
     involved in data matching are used.}
-  \item{...}{passed to the plot function.}
+  \item{object}{an object of class \code{cem.att} function}
+  \item{plot}{if \code{TRUE} the plot is produced, otherwise only calculations are made.}
+  \item{ecolors}{a vector of three colors respectively for positive, zero and negative 
+      treatment effect. Default \code{c("blue","black","red")}.}
+  \item{...}{passed to the plot function or to \code{printCoefmat} for the method summary}
 }
 \details{
 
@@ -52,7 +58,13 @@ estimated model when availalble.
 }
 \value{
   A matrix of estimates with their standard error, or a list in
-  the case of \code{cem.match.list}.  } 
+  the case of \code{cem.match.list}.  For \code{plot.att} a list of strata 
+  estimated treatment effect and group ("positive", "negative", "zero") and 
+  individual treatment and effect and group. The individual treatment effect
+  and group is given by the treatment effect of the strata. Similarly for
+  the group ("positive", "negative", "zero"). Also, colors associated to
+  estimated treatment effects are returned for easy subsequent plotting.
+} 
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
   Casual Inference Without Balance Checking,''
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
@@ -76,6 +88,8 @@ rand2 <- att(mat, re78~treated,  data=LL, model="linear-RE", extra=TRUE)
 rf2 <- att(mat, re78~treated,  data=LL, model="rf", extra=TRUE)
 
 homo1
+summary(homo1)
+
 rand1
 rf1
 

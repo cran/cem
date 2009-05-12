@@ -79,7 +79,7 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
 
 
 cem.weights <- function(obj){
-    w <- rep(1,obj$n)
+    w <- rep(0,obj$n)
 	if(!is.null(obj$treatment)){
 	 tmp <- table(obj$mstrata, obj$groups)
 	 wh <- tmp[,2]/tmp[,1] * obj$tab[2,1]/obj$tab[2,2]
