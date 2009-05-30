@@ -47,7 +47,7 @@ plot.cem.att <- function(x, obj, data, vars=NULL, plot=TRUE, ecolors,...){
    else
     title <- sprintf("\n%s on CEM matched data\n\n",x$mod.type)
    if(plot)
-	 p1 <- dotplot(x$TE[ord], main=title,xlab="Treatment Effect",ylab="CEM Strata",col=cols[ord])
+	 p1 <- dotplot(x$TE[ord], main=title,xlab="Treatment Effect",ylab="CEM Strata",col=cols[ord],scales=list(y=list(draw=FALSE)))
   }
 
   stID <- names(x$TE)

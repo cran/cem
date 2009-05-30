@@ -58,7 +58,7 @@ Giuseppe Porro\thanks{Department of Economics and Statistics,
   giuseppe.porro@econ.units.it.} }
 
 % rbuild: replace 'Version ' '\\' Version
-\date{Version 1.0.106\\ \today}
+\date{Version 1.0.108\\ \today}
 
 %\VignetteIndexEntry{Coarsened Exact Matching}
 %\VignetteDepends{}

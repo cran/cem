@@ -14,7 +14,7 @@ href="http://www.sp.units.it/Lists/Corpo%20docente/DispForm.aspx?ID=77&Source=ht
 Porro </a>
 <br /><br />
 <!-- rbuild: replace 'Version:' '</b>' version -->
-<b>Version:1.0.106</b>
+<b>Version:1.0.108</b>
 
 <p style="float:left; width: 300; margin: 1.5em;"> <img
 src="./Columbus_egg.jpg" width="300" /> <br /><small> A picture of the
@@ -70,7 +70,7 @@ href="/matchit">MatchIt</a>.)
 	<li>To install, sign on to R, and type:
 	    install.packages("cem",repos="http://gking.harvard.edu")  or 
 	    <!-- rbuild: replace 'cem_' '.tar.gz' version -->
-	    <a href="/src/contrib/cem_1.0.106.tar.gz">download this file</a> and
+	    <a href="/src/contrib/cem_1.0.108.tar.gz">download this file</a> and
 	    install yourself.</li>
 
 	<li>For documentation, from R, type library(cem), and then ?cem,
