@@ -7,14 +7,18 @@
 
 <h1>cem: Coarsened Exact Matching Software</h1>
 
+<div>
 <a href="http://www.economia.unimi.it/iacus">Stefano M. Iacus</a>
 <a href="/">Gary King</a>,
 <a
 href="http://www.sp.units.it/Lists/Corpo%20docente/DispForm.aspx?ID=77&Source=http%3A%2F%2Fwww%2Esp%2Eunits%2Eit%2FLists%2FCorpo%2520docente%2FAllItems%2Easpx">Giuseppe
 Porro </a>
-<br /><br />
+</div>
+<div>
 <!-- rbuild: replace 'Version:' '</b>' version -->
-<b>Version:1.0.108</b>
+<br />
+<b>Version:1.0.109</b>
+</div>
 
 <p style="float:left; width: 300; margin: 1.5em;"> <img
 src="./Columbus_egg.jpg" width="300" /> <br /><small> A picture of the
@@ -70,7 +74,7 @@ href="/matchit">MatchIt</a>.)
 	<li>To install, sign on to R, and type:
 	    install.packages("cem",repos="http://gking.harvard.edu")  or 
 	    <!-- rbuild: replace 'cem_' '.tar.gz' version -->
-	    <a href="/src/contrib/cem_1.0.108.tar.gz">download this file</a> and
+	    <a href="/src/contrib/cem_1.0.111.tar.gz">download this file</a> and
 	    install yourself.</li>
 
 	<li>For documentation, from R, type library(cem), and then ?cem,

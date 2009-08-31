@@ -27,7 +27,7 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
 				nv <- length(vars)
 				L1.breaks <- vector(nv, mode = "list")
 				for (i in 1:nv) {
-					L1.breaks[[i]] <- pretty(range(data[i], na.rm = TRUE), 
+					L1.breaks[[i]] <- pretty(range(data[[i]], na.rm = TRUE), 
 											 n = nclass.scott(data[[i]]), 1)
 					names(L1.breaks) <- vars
 				}
