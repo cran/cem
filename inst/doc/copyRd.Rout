@@ -25,7 +25,7 @@ Type 'q()' to quit R.
 [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
 > setwd(file.path(wd,"../../man"))
 > file.copy(dir(patt=".Rd"), file.path(wd,"Rd"), TRUE)
- [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
 > file.copy(dir(patt=".sty"), file.path(wd,"Rd"), TRUE)
 Error in file.copy(dir(patt = ".sty"), file.path(wd, "Rd"), TRUE) : 
   no files to copy from
