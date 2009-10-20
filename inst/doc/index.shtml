@@ -20,8 +20,8 @@ Porro </a>
 <b>Version:1.0.109</b>
 </div>
 
-<p style="float:left; width: 300; margin: 1.5em;"> <img
-src="./Columbus_egg.jpg" width="300" /> <br /><small> A picture of the
+<p style="float:left; width: 300px; margin: 1.5em;"> <img
+src="./Columbus_egg.jpg" width="300px" /> <br /><small> A picture of the
 the original <a
 href="http://en.wikipedia.org/wiki/Egg_of_Columbus">Columbus egg</a>,
 a name now used to describe something which is simple or obvious only
@@ -35,10 +35,15 @@ The program implements the Coarsened Exact Matching (CEM) algorithm
 described in
 
 <blockquote>
-<span class="orange">Stefano M. Iacus, Gary King, and Giuseppe
-Porro, "Matching for Causal Inference Without Balance Checking</a>"
-(Abstract: <a href="/files/abs/cem-abs.shtml">HTML</a> | Paper: <a
-href="/files/cem.pdf">PDF</a>)</span>.
+Stefano M. Iacus, Gary King, and Giuseppe Porro, <span
+class="orange">"Causal Inference Without Balance Checking: Coarsened
+Exact Matching</a>"</span> (Abstract: <a
+href="/files/abs/cem-plus-abs.shtml">HTML</a> | Paper: <a
+href="/files/cem-plus.pdf">PDF</a>) and <span
+class="orange">"Multivariate Matching Methods That are Monotonic
+Imbalance Bounding"</span> (Abstract: <a
+href="/files/abs/cem-math-abs.shtml">HTML</a> | Paper: <a
+href="/files/cem-math.pdf">PDF</a>).
 </blockquote>
 
 Matching is a nonparametric method of preprocessing data to control
@@ -64,8 +69,7 @@ data with CEM, the analyst may then use a simple difference in means
 or whatever statistical model they would have applied without
 matching.  CEM also works well for multicategory treatments,
 determining blocks in experimental designs, and evaluating extreme
-counterfactuals.  (CEM can also be run via the R package <a
-href="/matchit">MatchIt</a>.)
+counterfactuals.
  </p>
   
 <ul> 
@@ -74,13 +78,17 @@ href="/matchit">MatchIt</a>.)
 	<li>To install, sign on to R, and type:
 	    install.packages("cem",repos="http://gking.harvard.edu")  or 
 	    <!-- rbuild: replace 'cem_' '.tar.gz' version -->
-	    <a href="/src/contrib/cem_1.0.111.tar.gz">download this file</a> and
+	    <a href="/src/contrib/cem_1.0.116.tar.gz">download this file</a> and
 	    install yourself.</li>
 
 	<li>For documentation, from R, type library(cem), and then ?cem,
 	    or download <a href="docs/cem.pdf">PDF</a> (or older
 	    <em>Journal of Statistical Software</em> version: <a
 	    href="/files/JSS-paper.pdf">PDF</a>)</li>
+
+      <li>Instead of the CEM R package, most of the features of CEM
+      are also available through the <a href="/matchit">MatchIt</a>
+      front end.</li>
       </ul>
       
   <li>CEM for Stata (version 10 or greater):</li>
@@ -91,6 +99,10 @@ href="/matchit">MatchIt</a>.)
 	    
       <li>For documentation, type help cem or download
 	  <a href="/files/cem-stata.pdf">PDF</a>.</li>
+
+      <li>Instead of the CEM R package, most of the features of CEM
+      are also available through the <a href="/matchit">MatchIt</a>
+      front end.</li>
     </ul>
     
 <li>Please send ALL questions, bugs, and requests to our mailing List

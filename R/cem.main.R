@@ -100,7 +100,9 @@ find.strata <- function(obj){
  mstrata <- match(obj$strata,y)
  n.st <- length(y)
  tab <- table(mstrata, obj$groups)
- idx <- as.integer(which(tab[,1]*tab[,2]<1)) 
+ tt <- apply(tab,1, function(x) all(x>0))
+ idx <- which(tt == FALSE)
+#idx <- as.integer(which(tab[,1]*tab[,2]<1)) 
  idx <- which(mstrata %in% idx)
  mstrata[idx] <- NA
  list(mstrata=mstrata, mstrataID=unique(na.omit(mstrata)))

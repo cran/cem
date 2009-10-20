@@ -36,7 +36,70 @@ L1.meas <- function(group, data, drop=NULL, breaks=NULL, weights){
 }
 
 
-cem.imbalance <- function(group, data, collapsed=TRUE, reduced=TRUE, breaks=NULL, weights){
+
+cem.imbalance <- function (group, data, collapsed = TRUE, reduced = TRUE, breaks = NULL, weights) 
+{
+    lv <- unique(na.omit(group))
+    if (length(lv) > 2) 
+	stop("more than 2 groups")
+    if (is.null(breaks)) {
+        vars <- colnames(data)
+        nv <- length(vars)
+        breaks <- vector(nv, mode = "list")
+        for (i in 1:nv) {
+            if (is.numeric(data[[i]]) | is.integer(data[[i]])) 
+			breaks[[i]] <- pretty(range(data[[i]], na.rm = TRUE), 
+								  n = nclass.scott(na.omit(data[[i]])), 1)
+            names(breaks) <- vars
+        }
+    }
+    if (!reduced) {
+        tmp <- reduce.data(data, collapse = TRUE, breaks = breaks)
+        data <- tmp$data
+        new.breaks <- tmp$breaks
+        collapsed <- TRUE
+    }
+    if (!collapsed) 
+	data <- collapse.data(data)
+    n <- length(data)
+    if (missing(weights)) {
+        weights <- rep(1, n)
+    }
+	
+    keep <- which(weights > 0)
+    tmp <- data.frame(data[keep], group[keep])
+    tab1 <- table(tmp)
+    tmp <- rowSums(tab1)
+    LCS <- length(which(tmp > 1))/length(tmp)
+    idx1 <- which(group == lv[1])
+    idx2 <- which(group == lv[2])
+    n1 <- sum(weights[idx1])
+    n2 <- sum(weights[idx2])
+    weights[idx1] <- weights[idx1]/n1
+    weights[idx2] <- weights[idx2]/n2
+    data <- as.integer(factor(data))
+	
+    tab <- unique(data)
+#    ff <- function(i) {
+#        jdx1 <- which((data == i) & (group == lv[1]))
+#        jdx2 <- which((data == i) & (group == lv[2]))
+#        abs(sum(weights[jdx1],na.rm=TRUE) - sum(weights[jdx2],na.rm=TRUE))
+#    }
+#    aa <- sapply(tab, ff, USE.NAMES = FALSE)
+#    L1 <- sum(aa)/2
+    tmp <- data.frame(gr=group, w=weights)
+    gg <- function(x){
+		abs(sum(x$w[which(x$gr==lv[1])],na.rm=TRUE) -  
+			 sum(x$w[which(x$gr==lv[2])],na.rm=TRUE))
+    }
+    L1 <- sum(unlist(by(tmp, data,  gg,simplify=TRUE)))/2
+	
+    out <- list(L1 = L1, breaks = new.breaks, LCS = 100 * LCS)
+    class(out) <- "L1.meas"
+    return(out)
+}
+
+old.cem.imbalance <- function(group, data, collapsed=TRUE, reduced=TRUE, breaks=NULL, weights){
     lv <- unique(na.omit(group))
     if (length(lv) > 2) 
         stop("more than 2 groups")
