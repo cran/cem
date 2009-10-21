@@ -41,7 +41,7 @@ See \code{\link{L1.meas}} help page for details.
   \item{L1}{The global L1 measure of imbalance}
 }
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking,''
+  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \examples{ 

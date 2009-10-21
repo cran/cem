@@ -58,7 +58,7 @@ Giuseppe Porro\thanks{Department of Economics and Statistics,
   giuseppe.porro@econ.units.it.} }
 
 % rbuild: replace 'Version ' '\\' Version
-\date{Version 1.0.117\\ \today}
+\date{Version 1.0.120\\ \today}
 
 %\VignetteIndexEntry{Coarsened Exact Matching}
 %\VignetteDepends{}
@@ -204,17 +204,23 @@ uncertainty, or choosing a different research project.
 Although CEM is MIB, the actual degree of imbalance achieved in the
 matched sample may be lower than the chosen maximum, and so we also
 introduce a simple and comprehensive \emph{multivariate} imbalance
-measure \citep{IacKinPor08}.  The measure is based on the $L_1$
-difference between the multidimensional histogram of all pretreatment
-covariates in the treated group and that in the control group.  To do
-this, we first choose the number of bins for each continuous variable
-via standard automated univariate histogram methods and with
-categorical variables left as is.  These bin sizes must be defined
-separately from and prior to the coarsening levels chosen for CEM.
-Although this initial choice poses all the usual issues and potential
-problems when choosing bins in drawing histograms, we use it only as a
-fixed reference to evaluate pre and post matching imbalance.  Our
-functions compute these bin sizes automatically using automated
+measure \citep{IacKinPor08}.  The measure is based on the $\mathcal
+L_1$ difference between the multidimensional histogram of all
+pretreatment covariates in the treated group and that in the control
+group.  To do this, we first choose the number of bins for each
+continuous variable via standard automated univariate histogram
+methods and with categorical variables left as is.  These bin sizes
+must be defined separately from and prior to the coarsening levels
+chosen for CEM.  Although this initial choice poses all the usual
+issues and potential problems when choosing bins in drawing
+histograms, we use it only as a fixed reference to evaluate pre and
+post matching imbalance.  (We also offer a function, which are
+logically similar to ROC curve for classification problems, that
+compute this measure for a very large number of coarsenings to see
+whether one matching solution dominates others; see
+\code{L1.profile}.)
+
+Our functions compute these bin sizes automatically using automated
 histogram methods (and with smaller bins than would typically be
 chosen in running CEM), or they can optionally be set by the user, so
 long as this level is fixed through all subseqent matching.  Then, we
@@ -231,11 +237,13 @@ values:
 \end{equation}
 and where the summation is over all cells of the multivariate
 histogram, but is feasible to compute because it contains at most $n$
-nonzero terms.  The $\mathcal L_1$ measure\footnote{Prior to version 1.0.90 of the \pkg{cem} package the $\mathcal L_1$ measure did not include the factor $\frac12$.} varies in $[0,1]$.
-Perfect (up to discretization) global balance result in $\mathcal
-L_1=0$, and $\mathcal L_1=1$ indicates complete separation of the multimensional
-histograms. Any value in the interval $(0,1)$  indicates the amount of difference  between $k$-dimensional frequencies of the
-two groups. 
+nonzero terms.  The $\mathcal L_1$ measure\footnote{Prior to version
+  1.0.90 of the \pkg{cem} package the $\mathcal L_1$ measure did not
+  include the factor $\frac12$.} varies in $[0,1]$.  Perfect (up to
+discretization) global balance results in $\mathcal L_1=0$, and
+$\mathcal L_1=1$ indicates complete separation of the multimensional
+histograms.  Any value in the interval $(0,1)$ indicates the amount of
+difference between $k$-dimensional frequencies of the two groups.
 
 CEM also offers several other measures of imbalance such as the global
 difference in means and the difference in means within the strata that
@@ -298,7 +306,6 @@ and load the new version of the package with
 \begin{verbatim}
 > library(cem)
 \end{verbatim}
-
 
 \section{A User's Guide}
 
@@ -977,6 +984,7 @@ table(psample$full.paired)
 \include{Rd/imbalance}
 \include{Rd/k2k}
 \include{Rd/L1.meas}
+\include{Rd/L1.profile}
 \include{Rd/LL}
 \include{Rd/LeLonde}
 \include{Rd/pair}

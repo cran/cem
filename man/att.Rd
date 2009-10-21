@@ -66,7 +66,7 @@ estimated model when availalble.
   estimated treatment effects are returned for easy subsequent plotting.
 } 
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking,''
+  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 

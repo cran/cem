@@ -22,20 +22,23 @@ L1.profile(group, data, drop = NULL, min.cut=2, max.cut=6, ref.cut=3,
   \item{lty}{draw using specified lty}
 }
 \details{
-The L1 measure depends on the coarsening. A very fine coarsening on the
-variables (many cut points) produces values of L1 close to 1.
-A very mild coarsening (very fex cutpoints), is not able to discriminate, 
-i.e. L1 close to 0. This is particularly true when the number of observations
-is small with respect to the number of continuous variables.
+  The L1 measure depends on the coarsening chosen to calculate it, and
+  as such the comparison of different matching solutions may differ
+  depending on this somewhat arbitrary choice.  This function computes
+  L1 for a very wide range of possible
+  coarsenings.  The point of this function is that if
+  one matching solution has a lower L1 than another, then it dominates
+  without regard to the choice of coarsening.  A graphic display conveys
+  the results succinctly.  (The logic is similar to
+  that for ROC curves used for classification algorithms.)
+  (This degree of coarsening should remain fixed for different CEM
+  runs.)
 
-This function calculates the L1 distance for different levels of coarsening.
-First tries to move the cut the support of all variables together from
-\code{min.cut} to \code{max.cut}. Then, fixing a coarsening into \code{ref.cut}
-number of cut points on all variables, it changes the coarsening one variable at
-time, again from \code{min.cut} to \code{max.cut}. Given two matching solutions,
-if, say, the first method provides values of L1 sistematically smaller then 
-the same values for the second method, uniformly on the cut points choices, then 
-then imbalance has been better reduced by the first method.
+This function first tries to move the cutpoints of the support of all
+variables together from \code{min.cut} to \code{max.cut}. Then, fixing a
+coarsening into \code{ref.cut} number of cut points on all variables, it
+changes the coarsening one variable at time, again from \code{min.cut}
+to \code{max.cut}.
  
 Non numeric variables are not grouped, i.e. no coarsening occurs.
 
@@ -45,7 +48,7 @@ A \code{plot} method exists for the returned object.
   An invisible object of class \code{L1profile} which contains a named list of coarsening.
 }
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking,''
+  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \examples{

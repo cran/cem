@@ -17,15 +17,21 @@ L1.meas(group, data, drop=NULL, breaks = NULL, weights)
   \item{weights}{weights}
 }
 \details{
-This function calculates the L1 distance on the k-dimensional histogram.
+This function calculates the L1 distance on the k-dimensional histogram
+in order to measure the level of imbalance in a matching solution.
 
 If \code{breaks} is not specified, the Scott automated bin calculation
 is used (which coarsens less than Sturges, which used in
 \code{\link{cem}}).  Please refer to \code{\link{cem}} help page. In
 this case, breaks are used to calculate the L1 measure.
 
-If \code{breaks} is missing, the default rule to calculate cutpoints
-is the Scott's rule. 
+When choosing \code{breaks} for L1, a very fine coarsening (many cut
+points) produces values of L1 close to 1.  A very mild coarsening (very
+fex cutpoints), is not able to discriminate, i.e. L1 close to 0
+(particularly true when the number of observations is small with respect
+to the number of continuous variables).  The \code{L1.profile} function
+shows how to compare matching solutions for any level of (i.e., without
+regard to) coarsening.
 
 This code also calculate the Local Common Support (LCS) measure, which is
 the proportion of non empty k-dimensional cells of the histogram which
@@ -38,7 +44,7 @@ contain at least one observation per group.
   \item{LCS}{The numerical value of the Local Common Support proportion}
 }
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking,''
+  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \examples{

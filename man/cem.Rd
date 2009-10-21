@@ -121,7 +121,7 @@ data set has the same meaning in all, and is the same for all)
   \item{imbalance}{NULL or a vector of imbalances. See Details.}
 }
 \references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking,''
+  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \examples{
