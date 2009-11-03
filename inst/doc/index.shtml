@@ -17,7 +17,7 @@ Porro </a>
 <div>
 <br />
 <!-- rbuild: replace 'Version:' '</b>' version -->
-<b>Version:1.0.120</b>
+<b>Version:1.0.127</b>
 </div>
 
 <p style="float:left; width: 300px; margin: 1.5em;"> <img
@@ -78,7 +78,7 @@ counterfactuals.
 	<li>To install, sign on to R, and type:
 	    install.packages("cem",repos="http://gking.harvard.edu")  or 
 	    <!-- rbuild: replace 'cem_' '.tar.gz' version -->
-	    <a href="/src/contrib/cem_1.0.120.tar.gz">download this file</a> and
+	    <a href="/src/contrib/cem_1.0.127.tar.gz">download this file</a> and
 	    install yourself.</li>
 
 	<li>For documentation, from R, type library(cem), and then ?cem,

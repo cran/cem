@@ -20,7 +20,7 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
 		data <- data[-dropped]
 	vnames <- colnames(data)
     if (sum(is.na(data)) > 0) 
-        cat("Missing values exist in the data!\n")
+        cat("The data contain missing values. CEM will match on them; see the manual for other options.\n")
 
     n <- dim(data)[1]
     nv <- dim(data)[2]
