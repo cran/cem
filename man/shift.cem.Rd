@@ -41,6 +41,7 @@ matched \code{mC}, and the sum \code{mT+mC}, as a function of the shifts.
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \seealso{ \code{\link{cem}} }
 \examples{
+\dontrun{
 data(LL)
 
 m74 <- max(LL$re74, na.rm=TRUE)
@@ -62,5 +63,6 @@ mat <- cem(treatment="treated",data=LL, drop="re78",cut=mybr)
 mat
 
 shift.cem(mat, data=LL, shifts=seq(0.01, 0.5, length=10), verb=1)
+}
 }
 \keyword{datagen}

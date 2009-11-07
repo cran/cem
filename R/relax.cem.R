@@ -99,6 +99,9 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
         max.k <- max.k * (1 + 2 * n.sh)
     }
     cat(sprintf("Executing %d different relaxations\n", n.comb))
+
+	pb <- txtProgressBar(min = 1, max = n.relax, initial = 1, style = 3)
+
     tab <- as.data.frame(matrix(NA, n.comb + 1, 2 * obj$n.groups + 
 								2 + 1))
     colnames(tab) <- c(paste("G", obj$g.names, sep = ""), paste("PercG", 
@@ -117,6 +120,7 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
     K.tab <- 2
     adv <- 0
     for (r in 1:n.relax) {
+		setTxtProgressBar(pb, r)
         v.idx <- relax[[r]]
         brk <- expand.grid(b.seq[v.idx])
         r1 <- dim(brk)[1]
@@ -159,15 +163,15 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
             tab$Relaxed[K.tab] <- paste(r.str, collapse = ", ")
             k <- k + 1
             K.tab <- K.tab + 1
-            if (verbose == 1) {
-                iter <- as.integer(k/max.k * 10)
-                if (iter %in% c(2, 4, 6, 8, 10)) {
-					if (last != iter) 
-                    cat(sprintf("[%2d%%]", iter * 10))
-                }
-                else cat(".")
-                last <- iter
-            }
+#            if (verbose == 1) {
+#                iter <- as.integer(k/max.k * 10)
+#                if (iter %in% c(2, 4, 6, 8, 10)) {
+#					if (last != iter) 
+#                    cat(sprintf("[%2d%%]", iter * 10))
+#                }
+#                else cat(".")
+#                last <- iter
+#            }
             if (n.sh > 0) {
                 tmp.obj$breaks <- newcut
                 tmp.obj$drop <- obj$drop
@@ -185,17 +189,17 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
 																 ], tmp.tab[2, ]/tmp.tab[1, ] * 100))
                 tab$Relaxed[K.tab] <- sprintf("S:%s", r.str)
                 K.tab <- K.tab + 1
-                if (verbose == 1) {
-					for (kk in k:(k + 2 * n.sh)) {
-						iter <- as.integer(kk/max.k * 10)
-						if (iter %in% c(2, 4, 6, 8, 10)) {
-							if (last != iter) 
-							cat(sprintf("[%2d%%]", iter * 10))
-						}
-						else cat(".")
-						last <- iter
-					}
-                }
+#                if (verbose == 1) {
+#					for (kk in k:(k + 2 * n.sh)) {
+#iter <- as.integer(kk/max.k * 10)
+#						if (iter %in% c(2, 4, 6, 8, 10)) {
+#							if (last != iter) 
+#							cat(sprintf("[%2d%%]", iter * 10))
+#						}
+#						else cat(".")
+#						last <- iter
+#					}
+#                }
                 k <- k + 2 * n.sh
             }
             if (verbose > 1) {
@@ -204,6 +208,8 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
             }
         }
     }
+	close(pb)
+
     idx <- order(tab[, 1])
     tab <- tab[idx, ]
     rownames(tab) <- 1:(dim(tab)[1])

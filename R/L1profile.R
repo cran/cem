@@ -33,8 +33,10 @@ lty = 1, M=100, useCP=NULL)
 	cat("\n")
 	if(!is.null(useCP)){
 		nCP <- length(useCP)
+		pb <- txtProgressBar(min = 1, max = nCP, initial = 1, style = 3)
 		s <- round(nCP*.1)
 		for(k in 1:nCP){
+			setTxtProgressBar(pb, k)
 			cp <- useCP[[k]]
 			ncp <- length(cp)
 			for(j in 1:ncp)
@@ -44,16 +46,19 @@ lty = 1, M=100, useCP=NULL)
 			names(tmp) <- names(useCP)[k]
 			out <- c(out, tmp)
 			outCP[[length(outCP)+1]] <-  br
-			if(k %% s == 0){
-				ns <- ns+10
-				cat(sprintf("[%2d%%]",ns))
-			} else {
-				cat(".")
-			}			
+#			if(k %% s == 0){
+#				ns <- ns+10
+#				cat(sprintf("[%2d%%]",ns))
+#			} else {
+#				cat(".")
+#			}			
 		}
+		close(pb)	
 	} else {
-		s <- round(M*.1)
+#		s <- round(M*.1)
+		pb <- txtProgressBar(min = 1, max = M, initial = 1, style = 3)
  	 	for(m in 1:M){
+			setTxtProgressBar(pb, m)
 			theta <- sample(min.cut:max.cut, length(numvar),replace=TRUE)
 			names(theta) <- numvar
 			for (i in numvar) 
@@ -63,21 +68,24 @@ lty = 1, M=100, useCP=NULL)
 			names(tmp) <- sprintf("rnd(%d)",m)
 			out <- c(out, tmp)
 			outCP[[length(outCP)+1]] <-  br
-			if(m %% s == 0){
-				ns <- ns+10
-				cat(sprintf("[%2d%%]",ns))
-			} else {
-				cat(".")
-			}
+#			if(m %% s == 0){
+#				ns <- ns+10
+#				cat(sprintf("[%2d%%]",ns))
+#			} else {
+#				cat(".")
+#			}
 			
 		}
+		close(pb)
 	}
 	
 	names(outCP) <- names(out)
     idx <- order(out)
 	out <- out[idx]
 	outCP <- outCP[idx]
-    val <- list(L1 =out, CP = outCP)
+	medianL1 <- median(out)
+	medianCP <- outCP[[ which(out>medianL1)[1] ]]
+    val <- list(L1 =out, CP = outCP, medianL1=medianL1, medianCP=medianCP)
     class(val) <- "L1profile"
 	cat("\n")
     if (plot) 
