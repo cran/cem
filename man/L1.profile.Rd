@@ -56,6 +56,7 @@ A \code{plot} method exists for the returned object.
   http://gking.harvard.edu/files/abs/cem-abs.shtml}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \examples{
+\dontrun{
 data(LL)
 for(i in c(4:6,10:12))
  LL[[i]] <- factor(LL[[i]])
@@ -82,5 +83,6 @@ L1.profile(LL$treated,LL, drop=c("treated","re78"),
  weights=m1$w>0, add=TRUE, col="blue", lty=4, useCP=imb0$CP)
 
 legend(5, 0.9, legend=c("raw data", "pscore", "mahalanobis", "cem"), lty=1:4, col=c("red", "green", "orange", "blue"))
+}
 }
 \keyword{ datagen }

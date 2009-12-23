@@ -5,11 +5,13 @@
 Plot of imbalance space diagnostic tool for CEM
 }
 \usage{
-imbspace.plot(obj,group="1")
+imbspace.plot(obj, group="1", data, explore=TRUE)
 }
 \arguments{
   \item{obj}{an object of class \code{imbalance.space}}
   \item{group}{character string denoting group id. Defaults to \code{"1"}.}
+  \item{data}{data for running additional matching solutions.}
+  \item{explore}{if \code{TRUE} the user can interact and find new solutions.}
 }
 
 \details{
@@ -40,6 +42,7 @@ units matched.
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \seealso{ \code{\link{imbspace}} }
 \examples{
+\dontrun{
 require(cem)
 
 data(LL)
@@ -51,10 +54,9 @@ imb.raw <- L1.profile(LL$treated, LL[, mat$vars], M=250, plot=FALSE)
 
 imbsp <- imbspace(mat, LL,depth=2, raw.profile=imb.raw, maximal=6, minimal=2, fixed=c("hispanic", "black", "married", "nodegree","u74","u75"), plot=FALSE)
 
-tmp <- plot(imbsp)
-tmp
-
- 
+tmp <- plot(imbsp,data=LL,explore=interactive())
+tmp 
+}
 }
 \keyword{datagen}
 

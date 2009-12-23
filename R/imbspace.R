@@ -27,8 +27,8 @@ M=250, raw.profile=NULL)
 			nv <- length(vars)
 			L1.breaks <- vector(nv, mode = "list")
 			for (i in 1:nv) {
-				L1.breaks[[i]] <- pretty(range(data[[i]], na.rm = TRUE), 
-											 n = nclass.scott(data[[i]]), 1)
+				L1.breaks[[i]] <- pretty(range(as.numeric(data[[i]]), na.rm = TRUE), 
+											 n = nclass.scott(as.numeric(na.omit(data[[i]]))), 1)
 				names(L1.breaks) <- vars
 			}
 		}
@@ -198,12 +198,13 @@ M=250, raw.profile=NULL)
 	out$tab <- obj$tab
     out$medianCP <- medianCP
 	out$medianL1 <- medianL1
-	out$coars <- coars
+	out$coars <- coars[idx]
 	out$n.coars <- n.coars
+	out$match <- obj
     class(out) <- "imbalance.space"
 	
     if (plot) 
-	  plot(out)
+	  plot(out,data=data,explore=interactive())
 	
     return(invisible(out))
 }

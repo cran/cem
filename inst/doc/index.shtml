@@ -17,7 +17,7 @@ Porro </a>
 <div>
 <br />
 <!-- rbuild: replace 'Version:' '</b>' version -->
-<b>Version:1.0.128</b>
+<b>Version:1.0.142</b>
 </div>
 
 <p style="float:left; width: 300px; margin: 1.5em;"> <img
@@ -73,38 +73,36 @@ counterfactuals.
  </p>
   
 <ul> 
-  <li>CEM for R:</li>
+  <li><strong>CEM Package for R:</strong></li>
       <ul>      
 	<li>To install, sign on to R, and type:
 	    install.packages("cem",repos="http://gking.harvard.edu")  or 
 	    <!-- rbuild: replace 'cem_' '.tar.gz' version -->
-	    <a href="/src/contrib/cem_1.0.128.tar.gz">download this file</a> and
+	    <a href="/src/contrib/cem_1.0.142.tar.gz">download this file</a> and
 	    install yourself.</li>
 
-	<li>For documentation, from R, type library(cem), and then ?cem,
-	    or download <a href="docs/cem.pdf">PDF</a> (or older
-	    <em>Journal of Statistical Software</em> version: <a
-	    href="/files/JSS-paper.pdf">PDF</a>)</li>
-
-      <li>Instead of the CEM R package, most of the features of CEM
-      are also available through the <a href="/matchit">MatchIt</a>
-      front end.</li>
+	<li>For documentation, from R, type library(cem), and then
+	?cem, or download <a href="docs/cem.pdf">PDF</a> (or the
+	published <em>Journal of Statistical Software</em> version: <a
+	href="/files/cemR.pdf">PDF</a>)</li>
       </ul>
+
+<li><strong>MatchIt Package for R</strong>: Most of the features of
+CEM are also available through the <a href="/matchit">MatchIt</a> Package
+front end.</li>
       
-  <li>CEM for Stata (version 10 or greater):</li>
+  <li><strong>CEM for Stata</strong> (version 10 or greater):</li>
       <ul>
 	<li>To install, type:<br>
 	    net from http://gking.harvard.edu/cem/<br>
 	    net install cem </li>
 	    
-      <li>For documentation, type help cem or download
-	  <a href="/files/cem-stata.pdf">PDF</a>.</li>
-
-      <li>Instead of the CEM R package, most of the features of CEM
-      are also available through the <a href="/matchit">MatchIt</a>
-      front end.</li>
+      <li>For documentation, type "help cem" or download <a
+      href="/files/cem-stata.pdf">PDF</a> (or the published version in
+      <em>The Stata Journal</em>: <a
+      href="/files/cemStata.pdf">PDF</a>).</li>
     </ul>
-    
+
 <li>Please send ALL questions, bugs, and requests to our mailing List
     (you must subscribe to send): <a
     href="http://lists.gking.harvard.edu/index.cgi?info=cem"

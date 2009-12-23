@@ -36,7 +36,7 @@ pairs, triplets, etc depending on the value of \code{depth}.
 
 
 Calling directly \code{plot} on the output of \code{imbspace} has the same
-effect of calling directly \code{imbspace.plot}.
+effect of calling directly \code{\link{imbspace.plot}}.
 
 } 
 \value{
