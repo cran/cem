@@ -1,4 +1,4 @@
-L1.meas <- function(group, data, drop=NULL, breaks=NULL, weights){
+L1.meas <- function(group, data, drop=NULL, breaks=NULL, weights, grouping = NULL){
   if(!is.null(drop)){
    drop <- unique(drop)
    dropped <- match(drop, colnames(data))
@@ -14,11 +14,22 @@ L1.meas <- function(group, data, drop=NULL, breaks=NULL, weights){
   breaks <- vector(nv, mode="list")
   for(i in 1:nv){
    if(is.numeric(data[[i]]) | is.integer (data[[i]]))
-    breaks[[i]] <- pretty(range(data[[i]],na.rm=TRUE), n=nclass.scott(data[[i]]), 1)
+    breaks[[i]] <- pretty(range(data[[i]],na.rm=TRUE), n=nclass.scott(na.omit(data[[i]])), 1)
    names(breaks) <- vars
   }
  }  
 
+ if(!is.null(grouping) & !is.null(names(grouping))){
+	gn <- names(grouping)
+	n.gn <- length(gn)
+	for(g in 1:n.gn){
+		if(!is.null(data))
+			data[[gn[g]]] <- group.var(data[[gn[g]]], grouping[[g]])
+			if(!is.null(breaks[gn[g]]))
+			breaks[gn[g]] <- NULL   			   
+	}
+ }
+	
  n <- dim(data)[1]
 
  if(missing(weights)){
@@ -32,13 +43,16 @@ L1.meas <- function(group, data, drop=NULL, breaks=NULL, weights){
  }
 
 
- cem.imbalance(group, data, collapsed=FALSE, reduced=FALSE, breaks=breaks, weights=weights)
+ cem.imbalance(group, data, collapsed=FALSE, reduced=FALSE, breaks=breaks, weights=weights, grouping=grouping)
 }
 
+### in cem.imbalance the argument 'grouping' it is passed only as reference
+### in order to be returned in L1.meas or similar. Handling of grouping
+### should be done at a previous stage before calling cem.imbalance
 
-
-cem.imbalance <- function (group, data, collapsed = TRUE, reduced = TRUE, breaks = NULL, weights) 
-{
+cem.imbalance <- function(group, data, collapsed = TRUE, reduced = TRUE, breaks = NULL, 
+weights, grouping = NULL)  
+{    
     lv <- unique(na.omit(group))
     if (is.null(breaks)) {
         vars <- colnames(data)
@@ -76,23 +90,26 @@ cem.imbalance <- function (group, data, collapsed = TRUE, reduced = TRUE, breaks
 		weights[idx] <- weights[idx]/sum(weights[idx])
 	}
 
-    data <- as.integer(factor(data))
-	
-    tab <- unique(data)
-    tmp <- data.frame(gr=group, w=weights)
-    gg <- function(x){
-		fr <- sapply(1:nlv, function(u) sum(x$w[which(x$gr==lv[u])],na.rm=TRUE))
-		abs(max(fr)[1] - min(fr)[1])
-    }
-    L1 <- sum(unlist(by(tmp, data, gg, simplify=TRUE)))/nlv
-	
-    out <- list(L1 = L1, breaks = new.breaks, LCS = 100 * LCS)
+    # data <- as.integer(factor(data))
+	#tab <- unique(data)
+
+    tmp <- data.frame(gr=group, w=weights,s=as.integer(factor(data)))
+
+    #   gg <- function(x){
+	#	fr <- sapply(1:nlv, function(u) sum(x$w[which(x$gr==lv[u])],na.rm=TRUE))
+	#	abs(max(fr)[1] - min(fr)[1])
+    #}
+    #L1 <- sum(unlist(by(tmp, data, gg, simplify=TRUE)))/nlv
+    
+    L1 <- sum( apply(xtabs(w ~ group+s, data=tmp) , 2, function(x) abs(diff(range(x)))) )/nlv
+
+    out <- list(L1 = L1, breaks = new.breaks, LCS = 100 * LCS, grouping=grouping)
     class(out) <- "L1.meas"
     return(out)
 }
 
 
-imbalance <- function(group, data, drop=NULL, breaks=NULL, weights){
+imbalance <- function(group, data, drop=NULL, breaks=NULL, weights, grouping = NULL){
  if (!is.data.frame(data))
         stop("Data must be a dataframe", call. = FALSE)
 
@@ -115,6 +132,17 @@ imbalance <- function(group, data, drop=NULL, breaks=NULL, weights){
   }
  }  
 
+ if(!is.null(grouping) & !is.null(names(grouping))){
+	gn <- names(grouping)
+	n.gn <- length(gn)
+	for(g in 1:n.gn){
+		if(!is.null(data))
+			data[[gn[g]]] <- group.var(data[[gn[g]]], grouping[[g]])
+		if(!is.null(breaks[gn[g]]))
+			breaks[gn[g]] <- NULL   			   
+	}
+ }
+	
  n <- dim(data)[1]
  if(missing(weights)){
   weights <- rep(1, n)

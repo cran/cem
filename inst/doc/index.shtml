@@ -17,7 +17,7 @@ Porro </a>
 <div>
 <br />
 <!-- rbuild: replace 'Version:' '</b>' version -->
-<b>Version:1.0.142</b>
+<b>Version:1.0.137</b>
 </div>
 
 <p style="float:left; width: 300px; margin: 1.5em;"> <img
@@ -78,7 +78,7 @@ counterfactuals.
 	<li>To install, sign on to R, and type:
 	    install.packages("cem",repos="http://gking.harvard.edu")  or 
 	    <!-- rbuild: replace 'cem_' '.tar.gz' version -->
-	    <a href="/src/contrib/cem_1.0.142.tar.gz">download this file</a> and
+	    <a href="/src/contrib/cem_2.4-6.tar.gz">download this file</a> and
 	    install yourself.</li>
 
 	<li>For documentation, from R, type library(cem), and then
@@ -91,11 +91,13 @@ counterfactuals.
 CEM are also available through the <a href="/matchit">MatchIt</a> Package
 front end.</li>
       
-  <li><strong>CEM for Stata</strong> (version 10 or greater):</li>
+  <li><strong>CEM for Stata</strong> (version 10 or later):</li>
       <ul>
 	<li>To install, type:<br>
 	    net from http://gking.harvard.edu/cem/<br>
 	    net install cem </li>
+	<li>You can also install from the SSC:<br>
+	    ssc install cem</li>
 	    
       <li>For documentation, type "help cem" or download <a
       href="/files/cem-stata.pdf">PDF</a> (or the published version in

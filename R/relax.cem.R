@@ -5,6 +5,8 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
 {
     if (class(obj) != "cem.match") 
 	stop("obj must be of class `cem.match'")
+    if(is.null(obj$X))
+    stop("run cem with argument keep.all=TRUE")
     L1data <- NULL
     if(eval.imbalance)
 	L1data <- data
@@ -27,10 +29,12 @@ use.coarsened = TRUE, eval.imbalance=TRUE, ...)
 				nv <- length(vars)
 				L1.breaks <- vector(nv, mode = "list")
 				for (i in 1:nv) {
+                   if(!is.factor(data[[i]]))
 					L1.breaks[[i]] <- pretty(range(data[[i]], na.rm = TRUE), 
 											 n = nclass.scott(na.omit(data[[i]])), 1)
-					names(L1.breaks) <- vars
+					
 				}
+                names(L1.breaks) <- vars
 			}
 		}
     }

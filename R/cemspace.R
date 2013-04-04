@@ -1,7 +1,7 @@
 `cemspace` <-
 function (treatment=NULL, data = NULL, R=100, grouping = NULL, drop=NULL,
-L1.breaks = NULL, plot = TRUE, fixed = NULL, minimal = 1, maximal = 5,
-M=250, raw.profile=NULL) 
+L1.breaks = NULL, L1.grouping=NULL, plot = TRUE, fixed = NULL, minimal = 1, maximal = 5,
+M=250, raw.profile=NULL, keep.weights=FALSE) 
 {
     if (!is.null(raw.profile) & class(raw.profile) != "L1profile") 
 	 stop("raw.profile must be of class `L1profile'")
@@ -36,14 +36,22 @@ M=250, raw.profile=NULL)
 	}
 	
 	if(is.null(raw.profile)){
-		cat("\nCalculating L1 profile for the raw data...\n")
-		imb0 <- L1.profile(groups, data, drop=treatment, M=M, plot=FALSE)
-		medianL1 <- median(imb0$L1)
-		medianCP <- imb0$CP[[ which(imb0$L1>medianL1)[1] ]]
+		if(is.null(L1.breaks)){
+		 cat("\nCalculating L1 profile for the raw data...\n")
+		 imb0 <- L1.profile(groups, data, drop=treatment, M=M, plot=FALSE)
+		 medianL1 <- median(imb0$L1)
+		 medianCP <- imb0$CP[[ which(imb0$L1 >= medianL1)[1] ]]
+		 medianGR <- imb0$GR[[ which(imb0$L1 >= medianL1)[1] ]]
+		} else {
+		 medianL1 <- L1.meas(groups, data, drop=treatment, breaks=L1.breaks, grouping=L1.grouping)$L1
+		 medianCP <- L1.breaks
+		 medianGR <- L1.grouping	
+		}
 	} else {
 		imb0 <- raw.profile
 		medianL1 <- raw.profile$medianL1
 		medianCP <- raw.profile$medianCP
+		medianGR <- raw.profile$medianGR
 	}
 
 	mnames <- vnames
@@ -109,6 +117,9 @@ M=250, raw.profile=NULL)
 					   paste("PercG", g.names, sep = ""), "ML1", "Relaxed")
 	n.coars <- dim(tab)[1]
 	coars <- vector(n.coars, mode="list")
+	weights <- NULL
+	if(keep.weights)
+	 weights <- vector(n.coars, mode="list")
 
 	tab[1, 1:n.groups] <- as.numeric(table(groups))
     tab[1, (n.groups + 1):(2 * n.groups)] <- 100
@@ -126,14 +137,17 @@ M=250, raw.profile=NULL)
 		setTxtProgressBar(pb, r)
 		for(i in 1:nv)
 			newcut[[i]] <- sample(b.seq[[i]], 1) 
-		obj <- cem(treatment, data, cut=newcut, eval=FALSE)
+		obj <- cem(treatment, data, cutpoints=newcut, eval.imbalance=FALSE)
 		
 		coars[[r+1]] <- obj$breaks
+		if(keep.weights)
+		 weights[[r+1]] <- obj$w
+		
 		tab[r+1, 1:(2 * n.groups)] <- as.numeric(c(obj$tab[2,], 
 												   obj$tab[2, ]/obj$tab[1, ] * 100))
 		tab$Relaxed[r+1] <- "random"
 		tab[r+1, "ML1"] <- L1.meas(groups, data, drop=treatment, breaks=medianCP, 
-								    weights=obj$w)$L1
+								    weights=obj$w, grouping=medianGR)$L1
 
     }
 	close(pb)
@@ -141,12 +155,14 @@ M=250, raw.profile=NULL)
     tab <- tab[idx, ]
     rownames(tab) <- 1:(dim(tab)[1])
 	out <- list(space = tab)
-	out$L1breaks <- L1.breaks
+	out$L1breaks <- medianCP
 	out$raw.profile <- imb0
 	out$tab <- obj$tab
     out$medianCP <- medianCP
 	out$medianL1 <- medianL1
 	out$coars <- coars[idx]
+	if(keep.weights)
+	 out$weights <- weights[idx]
 	out$n.coars <- n.coars
 	out$match <- obj
     class(out) <- "imbalance.space"

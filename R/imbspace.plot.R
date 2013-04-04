@@ -185,9 +185,9 @@ imbspace.plot <- function(obj,group="1", data, explore=TRUE){
 			 other.args <- tmpc
 			tclServiceMode(FALSE)	 
 			if(!is.null(other.args))
-			 eval(parse(text=sprintf("tmp.mat <- cem(obj$match$treatment, data=data[,c(obj$match$vars,obj$match$treatment) ], cut=new.br, eval=FALSE, %s)", other.args)))
+			 eval(parse(text=sprintf("tmp.mat <- cem(obj$match$treatment, data=data[,c(obj$match$vars,obj$match$treatment) ], cutpoints=new.br, eval.imbalance=FALSE, %s)", other.args)))
 		    else
-			   tmp.mat <- cem(obj$match$treatment, data=data[,c(obj$match$vars,obj$match$treatment) ], cut=new.br, eval=FALSE)
+			   tmp.mat <- cem(obj$match$treatment, data=data[,c(obj$match$vars,obj$match$treatment) ], cutpoints=new.br, eval.imbalance=FALSE)
 			   
 			tclServiceMode(TRUE)
 			tmp.ML1 <- L1.meas(obj$match$groups, data=data[,obj$match$vars], breaks=obj$medianCP, weights=tmp.mat$w)$L1

@@ -35,7 +35,8 @@ relax.plot(tab, group="1", max.terms=50, perc=.5, unique=FALSE, colors=TRUE)
 
 \details{
   \code{relax.cem} starts from a cem solution (as given by
-  \code{\link{cem}}) and tries several relaxed coarsenings on the
+  \code{\link{cem}}) which has to be run with argument \code{keep.all=TRUE}.
+  \code{relax.cem}  tries several relaxed coarsenings on the
   variables. Coarsenings corresponds to dividing the support of each
   variable into a decreasing number of intervals of the same length (even
   if in the starting solution intervals are of different lengths).
@@ -100,7 +101,7 @@ effect of calling directly \code{relax.plot}.
 \dontrun{
 data(LL)
 
-mat <- cem(treatment="treated",data=LL, drop="re78")
+mat <- cem(treatment="treated",data=LL, drop="re78", keep.all=TRUE)
 mat
 tab <- relax.cem(mat, LL, depth=1, plot=FALSE)
 

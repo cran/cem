@@ -1,6 +1,7 @@
 `cem.main` <-
 function (treatment=NULL, data, cutpoints = NULL,  drop=NULL, 
-    k2k=FALSE, method=NULL, mpower=2, verbose = 0)
+    k2k=FALSE, method=NULL, mpower=2, verbose = 0,
+    baseline.group,keep.all=TRUE)
 {
    if (is.null(data)) 
         stop("Dataframe must be specified", call. = FALSE)
@@ -38,7 +39,8 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
     }
 
 	obj <- cem.match(data = data, verbose = verbose)
-	obj$X <- data
+	if(keep.all)
+     obj$X <- data
 	obj$drop <- drop
 	obj$breaks <- mycut
 	imbalance <- NULL
@@ -60,7 +62,17 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
 		obj$mstrata <- tmp$mstrata
 		obj$mstrataID <- tmp$mstrataID
 		obj$matched <- !is.na(obj$mstrata)
-		
+        if(missing(baseline.group))
+         baseline.group = "1"
+        if(!(baseline.group %in% obj$g.names)| is.null(baseline.group)){ 
+          if("1" %in% obj$g.names)
+            baseline.group <- "1"
+          else
+            baseline.group <- obj$g.names[1]
+        }
+        if(verbose>0)
+         cat(sprintf("\nUsing '%s'='%s' as baseline group\n", treatment, baseline.group)) 
+        obj$baseline.group <- baseline.group		
 	}
 
 	if(!is.null(treatment))
@@ -77,8 +89,32 @@ function (treatment=NULL, data, cutpoints = NULL,  drop=NULL,
 }
 
 
+cem.weights <- function (obj) 
+{
+    bg <- which(obj$g.names==obj$baseline.group)
+    bgn <- sprintf("G%s",obj$baseline.group)
+    
+    w <- rep(0, obj$n)
+    if (!is.null(obj$treatment)) {
+        tmp <- table(obj$mstrata, obj$groups)
+        wh <- t((sapply(1:NROW(tmp), function(x) tmp[x,bg]/tmp[x,]) * (obj$tab["Matched",]/obj$tab["Matched", bgn]))) 
+        rownames(wh) <- rownames(tmp)
+        colnames(wh) <- colnames(tmp)
+        w <- numeric(obj$n)
+        mID <- as.numeric(rownames(wh))
+        nID <- length(mID)
+        for(i in 1:nID){
+            for(j in levels(obj$groups)){
+                idx <- which(obj$mstrata==mID[i] & obj$groups==j)
+                w[idx] <- wh[i, match(j, colnames(wh))]
+            }
+        }
+    }
+    w
+}
 
-cem.weights <- function(obj){
+
+old.cem.weights <- function(obj){
     w <- rep(0,obj$n)
 	if(!is.null(obj$treatment)){
 	 tmp <- table(obj$mstrata, obj$groups)

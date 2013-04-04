@@ -19,12 +19,13 @@ group.var <- function(x, groups){
 
 `cem` <-
 function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,  
-    grouping = NULL, drop=NULL, eval.imbalance = TRUE, k2k=FALSE,  
-	method=NULL, mpower=2, L1.breaks = NULL, verbose = 0)
+    grouping = NULL, drop=NULL, eval.imbalance = FALSE, k2k=FALSE,  
+	method=NULL, mpower=2, L1.breaks = NULL, L1.grouping = NULL, 
+    verbose = 0, baseline.group="1",keep.all=FALSE)
 {
     L1data <- data
 	L1datalist <- datalist
-	
+	    
 	if(!is.null(grouping) & !is.null(names(grouping))){
       gn <- names(grouping)
       n.gn <- length(gn)
@@ -45,10 +46,11 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
    if(!is.null(data) & is.null(datalist)){
      mat <- cem.main(treatment=treatment, data=data, cutpoints = cutpoints,  drop=drop, 
                k2k=k2k, method=method, mpower=mpower, 
-			   verbose = verbose)
+			   verbose = verbose, baseline.group=baseline.group,
+       keep.all=keep.all)
  	 if(eval.imbalance & !is.null(treatment) & length(which(mat$matched==TRUE)>0))
 	  mat$imbalance <- imbalance(mat$groups, data=L1data, drop=mat$drop, breaks=L1.breaks,
-	                  weights=mat$w)
+	                  weights=mat$w, grouping=L1.grouping)
 	mat$grouping <- grouping				  
     return( mat )
    } 
@@ -85,7 +87,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
     rownames(bigdata) <- 1:(dim(bigdata)[1])
 	mat <- cem.main(treatment=treatment, data=bigdata, cutpoints = cutpoints,  drop=drop, 
                k2k=k2k, method=method, mpower=mpower, 
-			   verbose = verbose)
+			   verbose = verbose, baseline.group=baseline.group,keep.all=keep.all)
 	
 	for(i in 1:nd){
      all <- c(1:n + (i-1)*n )
@@ -102,9 +104,11 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
     for(i in 1){
      obj <- mat
 	 all <- c(1:n + (i-1)*n )
-    obj$X <- mat$X[all,]
-	rownames(obj$X) <- rownames(datalist[[i]])
-	obj$strata <- new.strata
+    if(keep.all){ 
+        obj$X <- mat$X[all,]
+	rownames(obj$X) <- rownames(datalist[[i]]) 
+       }
+    obj$strata <- new.strata
     obj$drop <- mat$drop
     obj$breaks <- mat$breaks
     imbalance <- NULL
@@ -142,9 +146,11 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
     for(i in 2:nd){
      obj <- mat
 	 all <- c(1:n + (i-1)*n )
-    obj$X <- mat$X[all,]
+    if(keep.all){
+        obj$X <- mat$X[all,]
 	rownames(obj$X) <- rownames(datalist[[i]])
-	obj$strata <- new.strata
+    }
+    obj$strata <- new.strata
     obj$drop <- mat$drop
     obj$breaks <- mat$breaks
     imbalance <- NULL
@@ -196,7 +202,7 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
      }
 	 
     tmp <- imbalance(	list.obj[[1]]$groups, data=avg.data, drop=list.obj[[1]]$drop, breaks=L1.breaks,
-	                  weights=list.obj[[1]]$w) 
+	                  weights=list.obj[[1]]$w, grouping=L1.grouping) 
 	for(i in 1:nd){
      list.obj[[i]]$imbalance <- tmp
 	 list.obj[[i]]$grouping <- grouping
@@ -207,11 +213,12 @@ function (treatment=NULL, data = NULL, datalist=NULL, cutpoints = NULL,
    } else {	
    for(i in 1:nd){
     list.obj[[i]] <- cem.main(treatment=treatment, data=datalist[[i]], cutpoints = cutpoints,  drop=drop, 
-            k2k=k2k, method=method, mpower=mpower, verbose = verbose)
+            k2k=k2k, method=method, mpower=mpower, verbose = verbose,
+              baseline.group=baseline.group,keep.all=keep.all)
     unique <- FALSE
 	if(eval.imbalance & !is.null(treatment))
 	  list.obj[[i]]$imbalance <- imbalance(list.obj[[i]]$groups, data=L1datalist[[i]], drop=list.obj[[i]]$drop, breaks=L1.breaks,
-	                  weights=list.obj[[i]]$w)
+	                  weights=list.obj[[i]]$w, grouping=L1.grouping)
     list.obj[[i]]$grouping <- grouping
 
     }

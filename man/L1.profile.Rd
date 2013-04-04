@@ -7,7 +7,7 @@ Calculates L1 distance for different coarsenings
 \usage{
 L1.profile(group, data, drop = NULL, min.cut = 2, max.cut = 12, 
 weights, plot = TRUE, add = FALSE, col = "red", 
-lty = 1, M=100, useCP=NULL)
+lty = 1, M=100, useCP=NULL, grouping=NULL, progress=TRUE)
 }
 \arguments{
   \item{group}{the group variable}
@@ -24,6 +24,9 @@ lty = 1, M=100, useCP=NULL)
   \item{add}{add graph to an existing plot? Makes sense only if \code{plot} is \code{TRUE}}
   \item{col}{draw in specified color}
   \item{lty}{draw using specified lty}
+  \item{grouping}{named list, each element of which is a list of
+  groupings for a single categorical variable. See Details.}
+  \item{progress}{if \code{TRUE}, feedback on progress is given. See Details.}
 }
 \details{
   The L1 measure depends on the coarsening chosen to calculate it, and
@@ -43,7 +46,8 @@ between \code{min.cut} and \code{max.cut} in which to cut  the support of each
 variable. This procedure is repeated \code{M} times. The out is sorted in
 increasing values of L1 just for graphical representation.
  
-Non numeric variables are not grouped, i.e. no coarsening occurs.
+Non numeric variables are  grouped randomly unless they appear specified in
+ the \code{grouping} argument.
 
 A \code{plot} method exists for the returned object.
 }

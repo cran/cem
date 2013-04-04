@@ -69,7 +69,7 @@ plot.cem.att <- function(x, obj, data, vars=NULL, plot=TRUE, ecolors,...){
     tmp <- as.data.frame(tmp)     
   }
   rownames(tmp) <- stID
-  tmp$level <- factor(level,levels=c("negative","zero","positive"),ord=TRUE)   
+  tmp$level <- factor(level,levels=c("negative","zero","positive"),ordered=TRUE)   
   p21 <- NULL
   p22 <- NULL
   p23 <- NULL
@@ -78,11 +78,11 @@ plot.cem.att <- function(x, obj, data, vars=NULL, plot=TRUE, ecolors,...){
   n.high <- length(which(level=="positive"))
   if(plot){
 	if(n.low>0)
-	  p21 <- parallel(~ tmp[use.vars], subset=level=="negative", tmp, main="negative",alpha=1.5/n.low, col="blue")
+	  p21 <- parallelplot(~ tmp[use.vars], subset=level=="negative", tmp, main="negative",alpha=1.5/n.low, col="blue")
     if(n.zero>0)
-      p22 <- parallel(~ tmp[use.vars], subset=level=="zero", tmp, main="zero",alpha=1.5/n.zero, col="black")
+      p22 <- parallelplot(~ tmp[use.vars], subset=level=="zero", tmp, main="zero",alpha=1.5/n.zero, col="black")
     if(n.high>0)
-      p23 <- parallel(~ tmp[use.vars], subset=level=="positive",  tmp, main="positive",alpha=1.5/n.high, col="red")
+      p23 <- parallelplot(~ tmp[use.vars], subset=level=="positive",  tmp, main="positive",alpha=1.5/n.high, col="red")
     plot(p1, split=c(1,1,1,2))
     if(!is.null(p21))
       plot(p21, split=c(1,2,3,2), newpage=FALSE)

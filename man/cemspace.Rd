@@ -6,8 +6,8 @@ Exploration tool for CEM
 }
 \usage{
 cemspace(treatment=NULL, data = NULL, R=100, grouping = NULL, drop=NULL,
-L1.breaks = NULL, plot = TRUE, fixed = NULL, minimal = 1, maximal = 5,
-M=250, raw.profile=NULL) 
+L1.breaks = NULL, L1.grouping=NULL, plot = TRUE, fixed = NULL, 
+minimal = 1, maximal = 5, M=250, raw.profile=NULL, keep.weights=FALSE) 
 }
 \arguments{
   \item{treatment}{character, name of the treatment variable.}
@@ -18,7 +18,9 @@ M=250, raw.profile=NULL)
   \item{drop}{a vector of variable names in the data frame to ignore
     during matching}
   \item{L1.breaks}{list of cutpoints for the calculation of the L1 measure.}
-  \item{plot}{plot the space of solutions?}  
+  \item{L1.grouping}{as \code{grouping} but only needed in the calculation
+   of the L1 measure not in matching.}
+ \item{plot}{plot the space of solutions?}  
   \item{fixed}{vector of variable names which will not be relaxed.}  
   \item{minimal}{the minimal number of intervals acceptable after
   relaxation. Should be a nameed list of positive integers or if a number, this is
@@ -27,8 +29,9 @@ M=250, raw.profile=NULL)
   relaxation. Should be a nameed list of positive integers or if a number, this is
   applied to all variables.}
   \item{M}{number of possible random coarsening for the L1 measure}
-  \item{raw.profile}{and object of class \code{L1profile}. If passed, the \code{L1.breaks} are
-  ignored.}
+  \item{raw.profile}{an object of class \code{L1profile}. If passed, the \code{L1.breaks} are
+  ignored and set to median cutpoints of L1 profile.}
+  \item{keep.weights}{if \code{TRUE}, for each matching solutions the CEM-weights are stored.}
 }
 
 \details{

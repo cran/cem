@@ -34,7 +34,7 @@ shift.cem <- function(obj, data, shifts=NULL, verbose=0, plot=TRUE){
  
  for(sh in shifts){
   new.br <- prep.breaks(sh, obj$breaks)
-  tab <- cem.main(treatment=obj$treatment,data=data, drop=obj$drop,cut=new.br,k2k=obj$k2k)$tab
+  tab <- cem.main(treatment=obj$treatment,data=data, drop=obj$drop,cutpoints=new.br,k2k=obj$k2k)$tab
   if(verbose>1){
    cat(sprintf("\nShift=%f\n", sh))
    print(tab)
@@ -52,7 +52,7 @@ shift.cem <- function(obj, data, shifts=NULL, verbose=0, plot=TRUE){
   abline(h=obj$tab[2,2], lty=3, col="red")
   abline(v=shifts[idx], lty=2)
  }
- newobj <- cem.main(treatment=obj$treatment,data=data, drop=obj$drop,cut=new.br,k2k=obj$k2k)
+ newobj <- cem.main(treatment=obj$treatment,data=data, drop=obj$drop,cutpoints=new.br,k2k=obj$k2k)
  if(verbose>1){
   cat(sprintf("\nBest shift: %5.3f\nOld Match table:\n", shifts[idx]))
   print(obj$tab) 

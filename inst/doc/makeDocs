@@ -31,17 +31,18 @@ fi
 
 ${R_CMD} CMD BATCH copyRd
 
-Rdfiles=`ls ../../man/*.Rd`
+cd Rd
+Rdfiles=`ls *.Rd`
 for rd in ${Rdfiles}
   do
     newname=`basename ${rd} .Rd`
-    ${R_CMD} CMD Rdconv -t=latex ${rd} -o Rd/${newname}.tex
+    ${R_CMD} CMD Rdconv -t "latex" ${rd} >${newname}.tex
   
     ### basically replace "HeaderA" with "section*" 
-    perl -i -pe 's#HeaderA{(.*)}{(.*)}{(.*)}#subsection{{\\tt \1}: \2}\\label{ss:\3}#i' Rd/${newname}.tex 
+    perl -i -pe 's#HeaderA{(.*)}{(.*)}{(.*)}#subsection{{\\tt \1}: \2}\\label{ss:\3}#i' ${newname}.tex 
 
 done
-
+cd ..
 
 #echo "Sweave(\"cem.Rnw\")" | ${R_CMD} --slave
 echo "library(\"utils\"); options(\"width\"=80); Sweave(\"cem.Rnw\")"  | ${R_CMD} --no-save --no-restore 
@@ -68,5 +69,5 @@ grep -i Error cem.blg
 ## cleanup
 rm -f *.aux *.toc *.log *.out *.blg *.bbl
 rm -f cem.tex a007.tex
-
+rm -f *.Rout
 rm -rf Rd

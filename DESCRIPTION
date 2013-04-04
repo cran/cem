@@ -1,19 +1,15 @@
 Package: cem
-Version: 1.0.142
-Date: 2009-12-23
-Title: CEM: Software for Coarsened Exact Matching
-Author: Stefano Iacus <stefano.iacus@unimi.it> Gary King
-        <king@harvard.edu> Giuseppe Porro <giuseppe.porro@unimi.it>
-Maintainer: Gary King <king@harvard.edu>
-Depends: R (>= 2.6.0), nlme, lattice, randomForest, tcltk
-Description: This program implements the coarsened exact matching
-        algorithm (and many extensions) described in Stefano M. Iacus,
-        Gary King, and Giuseppe Porro, "Causal Inference Without
-        Balance Checking: Coarsened Exact Matching,"
-        http://gking.harvard.edu/files/abs/cem-plus-abs.shtml
+Type: Package
+Title: Coarsened Exact Matching
+Version: 1.1.5
+Author: Iacus, Stefano M., King, Gary, Porro, Giuseppe
+Suggests: MatchIt, Amelia(>= 1.2-0)
+Depends: nlme, lattice, randomForest, tcltk, combinat
+Maintainer: Stefano M. Iacus <stefano.iacus@unimi.it>
+Description: Implementation of the Coarsened Exact Matching algorithm
 License: GPL-2
-URL: http://gking.harvard.edu/cem
-Suggests: Amelia(>= 1.2-0), MatchIt
-Packaged: 2009-12-23 18:45:42 UTC; rbuild2
+URL: http://gking.harvard.edu/cem/
+Packaged: 2013-04-04 17:28:51 UTC; jago
+NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2009-12-24 10:42:05
+Date/Publication: 2013-04-04 20:38:13

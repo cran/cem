@@ -5,7 +5,7 @@
 Calculates several imbalance measures for the original
 and matched data sets}
 \usage{
-imbalance(group, data, drop=NULL, breaks = NULL, weights)
+imbalance(group, data, drop=NULL, breaks = NULL, weights, grouping = NULL)
 }
 \arguments{
  \item{group}{the group variable}
@@ -14,6 +14,8 @@ imbalance(group, data, drop=NULL, breaks = NULL, weights)
   \item{breaks}{a list of vectors of cutpoints used to calculate the L1
   measure. See Details.}
   \item{weights}{weights}
+  \item{grouping}{named list, each element of which is a list of
+  groupings for a single categorical variable. See Details.}
 }
 \details{
 This function calculates several imbalance measures.
@@ -32,6 +34,22 @@ this case, breaks are used to calculate the L1 measure.
 This function also calculate the global L1 imbalance measure. 
 If \code{breaks} is missing, the default rule to calculate cutpoints
 is the Scott's rule. 
+
+The \code{grouping} option is a list where each element is itself a
+list. For example, suppose for variable \code{quest1} you have the
+following possible levels \code{"no answer", NA, "negative", "neutral",
+"positive"} and you want to collect \code{("no answer", NA, "neutral")}
+into a single group, then the \code{grouping} argument should contain
+\code{list(quest1=list(c("no answer", NA, "neutral")))}. Or if you have
+a discrete variable \code{elements} with values \code{1:10} and you want
+to collect it into groups ``\code{1:3,NA}'', ``\code{4}'',
+``\code{5:9}'', ``\code{10}'' you specify in \code{grouping} the
+following list \code{list(elements=list(c(1:3,NA), 5:9))}.  Values not
+defined in the \code{grouping} are left as they are. If \code{cutpoints}
+and \code{groupings} are defined for the same variable, the
+\code{groupings} take precedence and the corresponding cutpoints are set
+to \code{NULL}.
+
 See \code{\link{L1.meas}} help page for details.  
 }
 \value{
