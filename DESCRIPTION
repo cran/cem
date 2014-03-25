@@ -1,7 +1,7 @@
 Package: cem
 Type: Package
 Title: Coarsened Exact Matching
-Version: 1.1.8
+Version: 1.1.10
 Author: Stefano M. Iacus <stefano.iacus@unimi.it>, 
 	Gary King <king@harvard.edu>, 
 	Giuseppe Porro <Porro Giuseppe <giuseppe.porro@uninsubria.it>
@@ -11,7 +11,7 @@ Maintainer: Stefano M. Iacus <stefano.iacus@unimi.it>
 Description: Implementation of the Coarsened Exact Matching algorithm
 License: GPL-2
 URL: http://gking.harvard.edu/cem/
-Packaged: 2014-03-19 08:30:52 UTC; jago
+Packaged: 2014-03-25 14:20:23 UTC; jago
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-03-19 10:16:39
+Date/Publication: 2014-03-25 16:15:28

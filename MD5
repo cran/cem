@@ -1,9 +1,9 @@
-aa11b9ef84209491b9cf538b32be9d94 *DESCRIPTION
+4348755d4c3ca37d5fa8a7b5851b1aac *DESCRIPTION
 9d62e35d627197c7a47e55ff30d470db *NAMESPACE
 e22b9511dbfc9e2dbad6c1691457bed8 *R/L1profile.R
 66616ff2accc6c8f8f78bb9b447be6f5 *R/att.R
 98fa102f7cca16c946869fe6a1735e69 *R/cem.R
-673881c799c68f1ae78fa6ff83db5a90 *R/cem.main.R
+96bbb13fbea7211f3fc917215aabf49c *R/cem.main.R
 88bb4d9b2e94e6d9641642f40089ed95 *R/cem.match.R
 9983fddb57d0ff4986b4c6de7c1f0055 *R/cem.summary.R
 444be34efd124b9cab8c8f056c0a7b13 *R/cemspace.R
