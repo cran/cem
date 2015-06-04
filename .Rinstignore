@@ -3,9 +3,10 @@ doc/.*[.]sty$
 doc/.*[.]Rout$
 doc/.*[.]zip$
 doc/Makefile
-vignettes/gk.bib
-vignettes/gkpubs.bib
-
+doc/copyRd.out
+doc/JSSstyle
+doc/Columbus_egg.jpg
+doc/balance-scale-redone.jpg
 
 
 
