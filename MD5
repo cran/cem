@@ -1,4 +1,4 @@
-7811309fd295a5a5f06ec9c9bd3f3a07 *DESCRIPTION
+93ba23b933aa54ac177a33d5f59511e8 *DESCRIPTION
 746f557c4d1677f156b357eb7c4099e2 *NAMESPACE
 e22b9511dbfc9e2dbad6c1691457bed8 *R/L1profile.R
 a9f6410d8b1c418c37a505fa194d54e8 *R/att.R
@@ -19,10 +19,10 @@ ac52424d56da6d913cad957d61004887 *R/relax.cem.R
 f1d49c00f78ccd737d1b7a2856ba4722 *R/relax.plot.R
 339809385fc6f729c94b6e0a1a8b4f7f *R/search.match.R
 471016a1f7ee1661cd78c0014551b687 *R/shift.cem.R
-f49b5ff3ef82ee606d9e9ee652212d5b *R/spacegraph.R
+a5d7a25ed2d1da6028f28797e9bde12e *R/spacegraph.R
 73dfacd28637bad22f1ff8803df96811 *R/zzz.R
 ef6324f06257c12442374be018049a8b *README.md
-bd592043380ac77d208e1ed5f6cbc90c *build/vignette.rds
+560623d128ae6e73bb8155d258306c33 *build/vignette.rds
 82f7f46a52a09b0912f980debebf2471 *data/DW.rda
 d9bf2e1858679cf504252887b3d9f32c *data/LL.rda
 b985ffc1342a1faffd65965095dc5042 *data/LLvsPSID.rda
@@ -44,17 +44,17 @@ a1b935cad6b6c5a98e48965ddc7fe8ec *inst/doc/JSSstyle/article.pdf
 afe870adc10fae1055d3cfff5d92b708 *inst/doc/JSSstyle/jss.drv
 526cf167a101c93078c1146b8ca016de *inst/doc/JSSstyle/jss.dtx
 e16d2652d3cd7f40dbe46ef0064d7a2d *inst/doc/JSSstyle/jss.ins
-b8a9d85d18c023058b0c721037212c55 *inst/doc/JSSstyle/jss.pdf
+593b56443e8e16d8477a67da05fc5a6d *inst/doc/JSSstyle/jss.pdf
 b9564ddd59a06782310989e8f33db55e *inst/doc/JSSstyle/jsslogo.jpg
 4fe78c7e775b636467fabc20910991cc *inst/doc/JSSstyle/softwarereview.tex
 0cd127ba10b5908fbf25b04e93085b3b *inst/doc/Makefile
 a14c9991ebfaa513860cf944d4ce9988 *inst/doc/att.tex
 3c5e89c870f2a78b10140695d62305c9 *inst/doc/balance-scale-redone.jpg
-2fd054a320d4e3f5704630ded0a64eb4 *inst/doc/cem.R
-e86c60ebd15ee966f63744b95cf186b2 *inst/doc/cem.Rnw
+99363aa260355dc3ecdc0200e51f359d *inst/doc/cem.R
+84f0449e926cf928202263c8076edbb0 *inst/doc/cem.Rnw
 ec269fa7b85796a35544b9f3324fa64b *inst/doc/cem.bib
-a4d7124cc835b2165dc4ab405ca8024c *inst/doc/cem.pdf
-2dd1d79099c3cc0b55e2b49cd015718e *inst/doc/coarsen1.pdf
+7f5b035e86ac0ef9596b828eb979ded1 *inst/doc/cem.pdf
+f516e379d7aed75a1ad97733460273d4 *inst/doc/coarsen1.pdf
 898f44984ffef717d54c7c75086e5e48 *inst/doc/coarsen2.pdf
 dcdbee3c7b310b1eaf05df9d72091ac3 *inst/doc/copyRd
 fa33e89428809ec122637b85c4023fa3 *inst/doc/d.tex
@@ -68,7 +68,7 @@ a8da0e32faf343a5dfa7cd2a86647f8d *inst/doc/outdata4.csv
 eb7a41cb396a357d6915692421f8954c *inst/doc/outdata5.csv
 99652ebf9965e10c320e16c0ca513af8 *inst/doc/pair.tex
 53439e30d40cd15e00a43d0b6589499d *inst/doc/resprev.tex
-9a52343645ea79730b54f34956613e0e *inst/doc/teff.pdf
+3a14688d811e95b32d75c17ef39e47bf *inst/doc/teff.pdf
 4218031f2d3d06b74984dc52aa76f07f *inst/doc/upquote.sty
 547f49a876129138fde49615b96537c6 *inst/makeLelonde.R
 3b2286bd30373961aeffae66837ee049 *man/DW.Rd
@@ -85,7 +85,7 @@ ab898e04ab1b1905e30439197c476d9b *man/imbalance.Rd
 2fd1e871520fa5f0aef398f0262b79a3 *man/imbspace.Rd
 c89ac732bf3d165e627915faab34322b *man/imbspace.plot.Rd
 d0b94df7631f960f73b9ea60f065c42a *man/k2k.Rd
-7ec26a7c2bbf197d793eaeca7398735c *man/pair.Rd
+fc1671615f935d9956be24b822ab0930 *man/pair.Rd
 e15315311ffb91814fc5f403bd4000e1 *man/pscoreSelect.Rd
 73e79b36aafe734cf6fd34c6537db42e *man/relax.cem.Rd
 35f1a721f862f64910eb937ba6d7ff54 *man/search.match.Rd
@@ -98,4 +98,3 @@ e1181734953c4e2b548b7bb44ec99f03 *vignettes/outdata1.csv
 6c22b238b01937822b6b4f7d89bff769 *vignettes/outdata3.csv
 a8da0e32faf343a5dfa7cd2a86647f8d *vignettes/outdata4.csv
 eb7a41cb396a357d6915692421f8954c *vignettes/outdata5.csv
-4218031f2d3d06b74984dc52aa76f07f *vignettes/upquote.sty
