@@ -209,7 +209,7 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
 	rf.cem["Estimate", ] <- w.coef
 	rf.cem["Std. Error",] <-  sqrt(( v1+v0 ) * sum(ww^2)/sum(ww)^2)
     rf.cem["t value",] <-  rf.cem["Estimate",]/rf.cem["Std. Error",]
-    rf.cem["p-value",] <-  2*(1-pnorm(rf.cem["t value",]))
+    rf.cem["p-value",] <-  2*(1-abs(pnorm(rf.cem["t value",])))
     att.model <- rf.cem
 
 
@@ -248,7 +248,7 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
      random.all["Estimate", ] <- w.coef
 	 random.all["Std. Error",] <-  random.all["Std. Error",]*sqrt(sum(ww^2)/sum(ww)^2)
      random.all["t value",] <-  random.all["Estimate",]/random.all["Std. Error",]
-     random.all["p-value",] <-  2*(1-pnorm(random.all["t value",]))
+     random.all["p-value",] <-  2*(1-abs(pnorm(random.all["t value",])))
 	 att.model <- random.all
 	 TE <- rand.cf[,obj$treatment]
 	 names(TE) <- rownames(rand.cf)
@@ -270,7 +270,7 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
     random.cem["Estimate", ] <- w.coef
 	random.cem["Std. Error",] <-  random.cem["Std. Error",]*sqrt(sum(ww^2)/sum(ww)^2)
     random.cem["t value",] <-  random.cem["Estimate",]/random.cem["Std. Error",]
-    random.cem["p-value",] <-  2*(1-pnorm(random.cem["t value",]))
+    random.cem["p-value",] <-  2*(1-abs(pnorm(random.cem["t value",])))
     ranef.cem <- random.effects(rand.cem)
 	att.model <- random.cem
 	TE <- rand.cf[,obj$treatment]
@@ -329,7 +329,7 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
     reg.all["Std. Error",1] <- sqrt( p^2 * reg.cem["Std. Error", obj$treatment]^2 +
       (1-p)^2 * att4.serr^2  )
     reg.all["t value",1] <- att4/att4.serr 
-    reg.all["p-value",1] <- 2*(1-pnorm(att4/att4.serr))
+    reg.all["p-value",1] <- 2*(1-abs(pnorm(att4/att4.serr)))
     reg.cem <- NULL
 	att.model <- reg.all
     TE <- NULL
@@ -409,7 +409,7 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
     reg.all["Std. Error",1] <- sqrt( p^2 * reg.cem["Std. Error", obj$treatment]^2 +
       (1-p)^2 * att4.serr^2  )
     reg.all["t value",1] <- att4/att4.serr 
-    reg.all["p-value",1] <- 2*(1-pnorm(att4/att4.serr))
+    reg.all["p-value",1] <- 2*(1-abs(pnorm(att4/att4.serr)))
     reg.cem <- NULL
 	att.model <- reg.all
     TE <- NULL
@@ -487,7 +487,7 @@ function (obj, formula, data, model="linear", extrapolate=FALSE,ntree=2000)
 
  att.model <- rbind(qoi, S)
  att.model <- rbind(att.model, att.model[1,]/att.model[2,]) # t value
- att.model <- rbind(att.model, 2*(1-pnorm(att.model[3,]))) # p-value
+ att.model <- rbind(att.model, 2*(1-abs(pnorm(att.model[3,])))) # p-value
  if(colnames(att.model)[1] == "qoi")
   colnames(att.model)[1] <- obj[[1]]$treatment
  rownames(att.model) <-  c("Estimate", "Std. Error",  "t value", "p-value")
