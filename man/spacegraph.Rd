@@ -12,7 +12,8 @@ spacegraph(treatment=NULL, data = NULL,
      minimal = 1, maximal = 15, M=100, 
      raw.profile=NULL, keep.weights=FALSE, progress=TRUE,
      rgrouping=FALSE, groups=NULL, psmpoly=1, mdmpoly=1, 
-     other.matches=NULL, heuristic=FALSE, linear.pscore=FALSE) 
+     other.matches=NULL, heuristic=FALSE, linear.pscore=FALSE,
+     verbose=1) 
 
 }
 
@@ -47,6 +48,8 @@ spacegraph(treatment=NULL, data = NULL,
   \item{heuristic}{Boolean, if TRUE spacegraph uses a heuristic method to randomly select covariates for MDM and PSM rather than sampling from all possible combinations of covariates.  The heuristic tends to select most of the main effects and a small number of interactions.  This method is automatically applied with large numbers of covariates.}
   \item{progress}{show progress bars.}
  \item{linear.pscore}{does \code{linear.pscore}}
+  \item{verbose}{integer, controls the level of output.} 
+ 
 }
 
 \details{
@@ -59,12 +62,12 @@ The \code{spacegraph} function currently calculates two measures of balance for 
   \item{val}{an object of class \code{spacegraph} that can be used directly with \code{plot()} to produce a spacegraph.}
 }
 
-\author{Richard Nielsen, Stephano Iacus, Gary King, and Guiseppe Porro}
+\author{Richard Nielsen, Stefano Iacus, Gary King, and Giuseppe Porro}
 \seealso{ \code{\link{combine.spacegraphs}} }
 \examples{
-\dontrun{
+\donttest{
 data(LL)
-
+set.seed(123)
 sp <- spacegraph("treated", LL, drop="re78", M=5,
                   R=list(cem=5,psm=5, mdm=5))
 
@@ -91,9 +94,9 @@ plot(sp, N="all")
 
 ## You can specify how the x-axis is scaled.  Setting scale.var=T
 ## gives you the scaling as 1/sqrt(n).  Setting scale.var=F gives
-## scales it linearly.  Default is scale.var=T.
+## scales it linearly.  Default is scale.var=TRUE.
 
-plot(sp, scale.var=F)
+plot(sp, scale.var=FALSE)
 
 ## You can also specify which measure of balance to use
 ## by specifying the argument "balance.metric" as

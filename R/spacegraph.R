@@ -4,7 +4,7 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
     L1.grouping = NULL, fixed = NULL, minimal = 1, maximal = 15, 
     M = 100, raw.profile = NULL, keep.weights = FALSE, progress = TRUE, 
     rgrouping = FALSE, groups = NULL, psmpoly = 1, mdmpoly = 1, 
-    other.matches = NULL, heuristic = FALSE, linear.pscore = FALSE) 
+    other.matches = NULL, heuristic = FALSE, linear.pscore = FALSE,verbose=1) 
 {
     if (nrow(na.omit(data)) != nrow(data)) 
         print("Missing values may lead to errors!")
@@ -84,7 +84,8 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
     }
     if (is.null(raw.profile)) {
         if (is.null(L1.breaks)) {
-            cat("\nCalculating L1 profile for the raw data...\n")
+            if(verbose>=1)
+              cat("\nCalculating L1 profile for the raw data...\n")
             imb0 <- L1.profile(groups, data, drop = treatment, 
                 M = M, plot = FALSE, progress = progress)
             medianL1 <- median(imb0$L1)
@@ -187,15 +188,17 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
     newcut <- vector(nv, mode = "list")
     names(newcut) <- mnames
     if (R$cem > 0) {
-        cat(sprintf("Executing %d different random CEM solutions\n", 
+        if(verbose>=1)
+          cat(sprintf("Executing %d different random CEM solutions\n", 
             R$cem))
-        if (progress == T & R$cem > 1) {
+        if (progress == TRUE & R$cem > 1 & interactive()) {
             pb <- txtProgressBar(min = 1, max = R$cem, initial = 1, 
                 style = 3)
         }
         for (r in 1:R$cem) {
             if (progress == T & R$cem > 1) {
-                setTxtProgressBar(pb, r)
+                if(interactive())
+                  setTxtProgressBar(pb, r)
             }
             for (i in 1:nv) newcut[[i]] <- sample(b.seq[[i]], 
                 1)
@@ -263,7 +266,7 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
             }
             tab[r + 1, "Method"] <- "cem"
         }
-        if (progress == T & R$cem > 1) {
+        if (progress == TRUE & R$cem > 1 & interactive()) {
             close(pb)
         }
     }
@@ -274,6 +277,7 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
         if (length(g.names) > 2) {
             stop("PSM requires a dichotomous treatment")
         }
+      if(verbose>=1)
         cat(sprintf("Executing %d different random PSM solutions\n", 
             R$psm))
         myps <- psmspace(treatment = treatment, data = data, 
@@ -287,7 +291,8 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
         if (length(g.names) > 2) {
             stop("MDM requires a dichotomous treatment")
         }
-        cat(sprintf("Executing %d different random MDM solutions\n", 
+        if(verbose>=1)
+          cat(sprintf("Executing %d different random MDM solutions\n", 
             R$mdm))
         mymdm <- mdmspace(treatment = treatment, data = data, 
             R = R$mdm, poly = mdmpoly, randomgroups = rgrouping, 
@@ -297,7 +302,8 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
         tab <- rbind(tab, mymdm$tab)
     }
     if (R$matchit > 0) {
-        cat(sprintf("Executing %d different random MatchIt solutions\n", 
+        if(verbose>=1)
+          cat(sprintf("Executing %d different random MatchIt solutions\n", 
             R$matchit))
         mymatchit <- matchitspace(treatment = treatment, data = data, 
             R = R$matchit, poly = psmpoly, randomgroups = rgrouping, 
@@ -306,19 +312,20 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
         tab <- rbind(tab, mymatchit$tab)
     }
     if (!is.null(other.matches)) {
-        cat(sprintf("Calculating L1 for %d solutions provided by the user\n", 
+        if(verbose>=1)
+          cat(sprintf("Calculating L1 for %d solutions provided by the user\n", 
             length(other.matches)))
         rtab <- as.data.frame(matrix(NA, length(other.matches), 
             2 * n.groups + 6))
         colnames(rtab) <- c(paste("G", g.names, sep = ""), paste("PercG", 
             g.names, sep = ""), "ML1", "Mdiff", "Mdisc", "Relaxed", 
             "Method", "Call")
-        if (progress == T) {
+        if (progress == TRUE & interactive()) {
             pb <- txtProgressBar(min = 0, max = length(other.matches), 
                 initial = 0, style = 3)
         }
         for (i in 1:length(other.matches)) {
-            if (progress == T) {
+            if (progress == TRUE & interactive()) {
                 setTxtProgressBar(pb, i)
             }
             mm <- other.matches[[i]]
@@ -357,7 +364,7 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
             rtab[i, "Method"] <- as.character(mm$method)[1]
             rtab[i, "Call"] <- as.character(mm$method)[1]
         }
-        if (progress == T) {
+        if (progress == TRUE & interactive()) {
             close(pb)
         }
         tab <- rbind(tab, rtab)
@@ -411,459 +418,7 @@ function (treatment = NULL, data = NULL, R = list(cem = 50, psm = 0,
 
 
 
-`spacegraphold` <-
-function (treatment=NULL, data = NULL, R=list("cem"=50,"psm"=0,"mdm"=0,"matchit"=0),
-    grouping = NULL, drop=NULL,
-    L1.breaks = NULL, L1.grouping=NULL, fixed = NULL, 
-    minimal = 1, maximal = 15, M=100, 
-    raw.profile=NULL, keep.weights=FALSE, progress=TRUE,
-    rgrouping=FALSE, groups=NULL, psmpoly=1, mdmpoly=1,
-    other.matches=NULL, heuristic=FALSE, linear.pscore=FALSE) 
-{
 
-    
-    if (nrow(na.omit(data)) != nrow(data))
-       print("Missing values may lead to errors!")
-
-    #if (nrow(na.omit(data)) != nrow(data) & R$matchit > 0) ## chokes if no R$matchit is specified
-    #   stop("Cannot use MatchIt with missing data.")
-
-    if (!treatment %in% names(data))
-       stop("Treatment is not in the specified data.  Check spelling.")
-
-    if (sum(drop %in% names(data)) != length(drop))
-       stop("Variables to drop do not appear in the data. Check spelling.")
-
-    if (length(names(data)[!names(data) %in% c(drop,treatment)]) <=3){
-      if("psm" %in% names(R) & (R$psm>0)){
-       stop("Must match with 4 or more variables for PSM, MDM, or MatchIt.")
-      }
-      if("mdm" %in% names(R) & (R$mdm>0)){
-       stop("Must match with 4 or more variables for PSM, MDM, or MatchIt.")
-      }
-      if("matchit" %in% names(R) & (R$matchit>0)){
-       stop("Must match with 4 or more variables for PSM, MDM, or MatchIt.")
-      }
-    }
-       
-    if (!is.null(raw.profile) & class(raw.profile) != "L1profile") 
-	 stop("raw.profile must be of class `L1profile'")
-
-    if (!is.list(R))
-         stop("R must be supplied as a list.  Ex: R = list(cem=100)")
-
-    if (sum(names(R) %in% c("cem","psm","mdm","matchit") == F) > 0)
-         stop("names for R must be cem, mdm, psm, or matchit. Ex: R = list(cem=5, mdm=5, psm=5)")
-
-    ## As of 13 July 2011, I hardcode the balance metric so that it
-    ## always does both.  This could be undone and it could be listed
-    ## as an argument taking "L1", "mdiff", "mdisc", or "all", but the problem
-    ## was that I then couldn't do na.omit on the table to do the
-    ## plotting.  I have to do some na.omitting because some of the
-    ## cems have no obs, and thus no L1.
-    balance.metric <- "all"
-
-    gn <- NULL
-    if (!is.null(grouping) & !is.null(names(grouping))) {
-        gn <- names(grouping)
-        n.gn <- length(gn)
-        for (g in 1:n.gn) {
-            if (!is.null(data)) 
-			data[[gn[g]]] <- group.var(data[[gn[g]]], grouping[[g]])
-        }
-    }
-
-    if(!is.null(other.matches)){
-      if(!is.list(other.matches)){stop("other.matches must be a list of data frames")}
-      for(i in 1:length(other.matches)){
-        mm <- other.matches[[i]]
-        if(!is.data.frame(mm)){stop("other.matches must be a list of data frames")}
-        if(sum(names(mm) ==
-         c("id","weight","method")) != 3){stop("other.matches must be a list of dataframes, with names: id, weigth, method.  See the help file for an example.")}
-      }
-    }
-
-    if(sum(names(table(data[[treatment]])) == as.character(c(0,1))) != 2){
-      stop("Treatment must be 0, 1 for now: issue is rcaliper draw in psmspace and mdmspace")
-    }
-
-
-        ## fill in the missing elements of R if not specified
-        rnames <- c("cem","psm","mdm","matchit")
-        for(i in rnames){
-          if(is.null(R[[i]])){R[[i]] <- 0}
-        }       
-
-        original.data <- data
-	imb0 <- NULL
-	medianL1 <- NULL
-	medianCP <- NULL	
-
-	drop <- unique(drop)
-	dropped <- match(drop, colnames(data))
-	dropped <- dropped[!is.na(dropped)]
-	
-	if(length(dropped)>0) 
-	 data <- data[-dropped]
-	vnames <- colnames(data)
-
-	if(!is.null(treatment)){
-		groups <- as.factor(data[[treatment]])
-        idx <- match(treatment, colnames(data))
-		if(length(idx)>0)
-		 vnames <- vnames[-idx]
-	}
-	
-	if(is.null(raw.profile)){
-		if(is.null(L1.breaks)){
-		 cat("\nCalculating L1 profile for the raw data...\n")
-		 imb0 <- L1.profile(groups, data, drop=treatment, M=M,
-                                    plot=FALSE, progress=progress)
-		 medianL1 <- median(imb0$L1)
-		 medianCP <- imb0$CP[[ which(imb0$L1 >= medianL1)[1] ]]
-		 medianGR <- imb0$GR[[ which(imb0$L1 >= medianL1)[1] ]]
-		} else {
-		 medianL1 <- L1.meas(groups, data, drop=treatment, breaks=L1.breaks, grouping=L1.grouping)$L1
-		 medianCP <- L1.breaks
-		 medianGR <- L1.grouping	
-		}
-	} else {
-		imb0 <- raw.profile
-		medianL1 <- raw.profile$medianL1
-		medianCP <- raw.profile$medianCP
-		medianGR <- raw.profile$medianGR
-	}
-
-
-      #######################################################
-      ## Inserting Mahalanobis matching discrepancy here
-      if(balance.metric == "mdisc" | balance.metric=="all"){
-        ff <- as.formula(paste(treatment,"~",paste(vnames,collapse="+")))
-        try(alldist <- mdistfun(ff,data), silent=T)
-        if(exists("alldist")==F){
-          alldist <- mdistfun2(ff,data)
-        }  
-      }
-    
-      #######################################################
-
-        
-	mnames <- vnames
-	if(!is.null(gn)){
-	 idx <- match(gn, vnames)
-	 if(length(idx)>0)
-	  mnames <- mnames[-idx] 
-	}
-
-	if (!is.null(fixed)) {
-        idx <- match(fixed, vnames)
-        if(length(idx) > 0) 
-		 mnames <- mnames[-idx]
-    }
-	
-    nv <- length(mnames)
-    v.num <- 1:nv
-
-
-    b.seq <- vector(nv, mode = "list")
-    names(b.seq) <- mnames
-	tmp.min <- 2
-	tmp.max <- 7
-	if(!is.list(minimal)){
-	 tmp.min <- minimal+1
-	 minimal <- vector(nv, mode="list")
-	 for (i in v.num) 
-	  minimal[[i]] <- tmp.min
-	}
-	if(!is.list(maximal)){
-		tmp.max <- maximal+1
-		maximal <- vector(nv, mode="list")
-		for (i in v.num) 
-		maximal[[i]] <- tmp.max
-	}
-    for (i in v.num) {
-		vna <- mnames[i]
-		min.br <- tmp.min
-		max.br <- tmp.max
-		
-		nuval <- length(unique(data[[vna]]))
-
-        if( (nuval==2) | !(is.numeric(data[[vna]]) | is.integer(data[[vna]]) | is.logical(data[[vna]])) )
-			max.br <- nuval+1
-		
-		if (!is.null(minimal[[vna]]))  
-			min.br <- minimal[[vna]] + 1
-		min.br <- max(tmp.min, min.br)
-		if (!is.null(maximal[[vna]])) 
-			max.br <- maximal[[vna]] + 1
-		max.br <- min(tmp.max, max.br)
-		b.seq[[i]] <- min.br:max.br
-    }
-    relax <- NULL
-
-	
-	g.names <- levels(groups)
-	n.groups <- length(g.names)
-
-
-    tab <- as.data.frame(matrix(NA, R$cem + 1, 2 * n.groups + 6))
-
-    colnames(tab) <- c(paste("G", g.names, sep = ""), 
-    					   paste("PercG", g.names, sep
-                                                 = ""), "ML1","Mdiff",
-                                           "Mdisc",
-                                           "Relaxed", "Method","Call")
-
-	n.coars <- dim(tab)[1]
-	coars <- vector(n.coars, mode="list")
-	weights <- NULL
-	if(keep.weights)
-	 weights <- vector(n.coars, mode="list")
-
-	tab[1, 1:n.groups] <- as.numeric(table(groups))
-    tab[1, (n.groups + 1):(2 * n.groups)] <- 100
-    tab$Relaxed[1] <- "<raw>"
-	coars[[1]] <- NULL
-	tab[1, "ML1"] <- medianL1
-      tab[1, "Mdiff"] <- mdiff(caliperdat=data,alldat=data,mvars=names(data)[-which(names(data) %in% treatment)],tvar=treatment, wt=NULL)
-      tab[1, "Mdisc"] <- mdisc(caliperdat=data,adist=alldist, wt=NULL)
-        tab[1, "Method"] <- "raw"
-        tab[1, "Call"] <- "none"
-
-    
-	newcut <- vector(nv, mode="list")
-    names(newcut) <- mnames
-
-    if(R$cem>0){
-      cat(sprintf("Executing %d different random CEM solutions\n", R$cem))
-
-      if(progress==T & R$cem>1){pb <- txtProgressBar(min = 1, max = R$cem, initial = 1, style = 3)}
-
-        for (r in 1:R$cem) {
-		if(progress==T & R$cem>1){setTxtProgressBar(pb, r)}
-		for(i in 1:nv)
-			newcut[[i]] <- sample(b.seq[[i]], 1) 
-
-            if(!rgrouping)
-		    obj <- cem(treatment, data, cutpoints=newcut, eval.imbalance=FALSE)
-
-            if(rgrouping){
-                grps <- do.random.groups2(data, groups, tvar=treatment)$grouping
-                obj <- cem(treatment, data, 
-                           cutpoints=newcut, eval.imbalance=FALSE, grouping = grps)
-            } 
-
-                ## reconstruct the call
-                cpholder <- rep(NA,length(obj$breaks))
-                for(ii in 1:length(obj$breaks)){
-                  cpholder[ii] <-paste(names(obj$breaks)[ii],"=c(",paste(round(obj$breaks[[ii]],2),collapse=", "),")",sep="")
-                }
-                breakslist <-  paste("list(",paste(cpholder,collapse=", "),")")
-                ## get the groups if there are any
-                if(!rgrouping){grouplist <- ""}
-                if(rgrouping){
-                  gpholder <- rep(NA,length(grps))
-                  for(ii in 1:length(grps)){
-
-                    ttt <- paste(names(grps)[ii],"=list(\"",paste(grps[[ii]],collapse="\", \""),"\")",sep="")
-                    ttt <- gsub("\"list(","c(",ttt, fixed=T)
-                    ttt <- gsub("\"c(","c(",ttt, fixed=T)
-                    ttt <- gsub("\")\",", "\"),",ttt, fixed=T)
-                    ttt <- gsub("\")\")", "\"))",ttt, fixed=T)
-                    gpholder[ii] <- ttt   
-                  }
-                  grouplist <- paste(", grouping = list(",paste(gpholder,collapse=", "),")")  
-                }
-                ## note that this "obj" is the "obj" that "spacegraph.plot"
-                ## takes as an input, NOT the "obj" above
-                tab[r+1,"Call"] <- sprintf("cem(obj$match$treatment, data=obj$data[,c(obj$match$vars,obj$match$treatment) ], cutpoints=%s, eval.imbalance = FALSE, L1.breaks=obj$raw.profile$medianCP %s)", breakslist, grouplist)
-                
-                
-		
-		coars[[r+1]] <- obj$breaks
-		if(keep.weights)
-		 weights[[r+1]] <- obj$w
-		
-		tab[r+1, 1:(2 * n.groups)] <- as.numeric(c(obj$tab[2,],  obj$tab[2, ]/obj$tab[1, ] * 100))
-		tab$Relaxed[r+1] <- "random"
-            ## The L1 calculation seems to choke if there are no matches
-            if(balance.metric=="L1" | balance.metric=="all"){
-              if(max(obj$tab[2,]==0)!=1){
-		    tab[r+1, "ML1"] <- L1.meas(groups, data, drop=treatment, breaks=medianCP, 
-								    weights=obj$w, grouping=medianGR)$L1
-              }
-            }
-            if(balance.metric=="mdiff" | balance.metric=="all"){
-              if(max(obj$tab[2,]==0)!=1){
-		    tab[r+1, "Mdiff"] <- mdiff(caliperdat=data,alldat=data,mvars=obj$vars,tvar=treatment, wt=obj$w)
-
-              }
-            }
-            if(balance.metric=="mdisc" | balance.metric=="all"){
-              if(max(obj$tab[2,]==0)!=1){
-		    tab[r+1, "Mdisc"] <- mdisc(caliperdat=data,adist=alldist, wt=obj$w)
-
-              }
-            }
-              
-            tab[r+1, "Method"] <- "cem"
-  
-        }
-      if(progress==T & R$cem>1){close(pb)}
-    }  # end if R$cem > 0
-    ## Do one cem even if R$cem==0 because you need it to make the
-    ## output
-    if(R$cem==0){
-      obj <- cem(treatment, data, cutpoints=newcut, eval.imbalance=FALSE)
-    }
-
-
-    ## Do PSM here
-    if(R$psm > 0){
-      if(length(g.names) > 2){stop("PSM requires a dichotomous treatment")}
-      cat(sprintf("Executing %d different random PSM solutions\n", R$psm))
-
-      myps <- psmspace(treatment=treatment,data=data,R=R$psm,
-                     poly=psmpoly,randomgroups=rgrouping,
-                     groups=groups,rawCP=medianCP,progr=progress,
-                     heur=heuristic, balance.metric=balance.metric,
-                     linear.pscore=linear.pscore,alldist=alldist)
-      tab <- rbind(tab,myps$tab)
-    }
-
-
-    ## Do MDM here
-    if(R$mdm > 0){
-      if(length(g.names) > 2){stop("MDM requires a dichotomous treatment")}
-      cat(sprintf("Executing %d different random MDM solutions\n", R$mdm))
-
-      mymdm <- mdmspace(treatment=treatment,data=data,R=R$mdm,
-                     poly=mdmpoly,randomgroups=rgrouping,
-                     groups=groups,rawCP=medianCP,progr=progress,
-                     heur=heuristic, balance.metric=balance.metric,
-                     alldist=alldist)
-      tab <- rbind(tab,mymdm$tab)
-    }
-
-
-
-  #I PUT THIS MATCHIT THING IN HERE, BUT IT'S NOT PLOTTING FOR SOME REASON.
-   
-  ## NOTE, "matchitspace" has not been updated to allow mdiff balance.
-    ## Run MatchIt here
-    if(R$matchit >0){
-      cat(sprintf("Executing %d different random MatchIt solutions\n", R$matchit))
-      mymatchit <- matchitspace(treatment=treatment,data=data,R=R$matchit,
-                     poly=psmpoly,randomgroups=rgrouping,
-                     groups=groups,rawCP=medianCP,progr=progress,
-                     heur=heuristic)
-      tab <- rbind(tab,mymatchit$tab)
-    }
-
-
-    ## Matched Samples provided by User
-    ## I think this will allow multinomial treatments.
-    if(!is.null(other.matches)){
-      cat(sprintf("Calculating L1 for %d solutions provided by the user\n", length(other.matches)))
-      rtab <- as.data.frame(matrix(NA, length(other.matches), 2 *
-                                   n.groups + 6))
-      #if(sum(g.names == c("0","1")) != 2){stop("other.matches requires a dichotomous treatment")}
-      colnames(rtab) <- c(paste("G", g.names, sep = ""), 
-    					   paste("PercG", g.names, sep
-                                                 = ""), "ML1","Mdiff",
-                                           "Mdisc",
-                                           "Relaxed", "Method","Call")
-      if(progress==T){pb <- txtProgressBar(min = 0, max = length(other.matches), initial = 0, style = 3)}
-      for(i in 1:length(other.matches)){
-        if(progress==T){setTxtProgressBar(pb, i)}
-        mm <- other.matches[[i]]
-        ## order the dataset according to the weights...
-        rdata <- data[as.character(mm$id),]
-        if(nrow(na.omit(rdata)) != nrow(rdata)){stop("other.matches specifies observations that aren't in the dataset.")}
-        if(balance.metric=="L1" | balance.metric=="all"){
-          rtab[i,"ML1"] <- (my.imbalance(rdata[[treatment]],rdata,drop=c(treatment),
-                          weights=mm$weight,breaks=medianCP))$L1$L1
-        }
-        if(balance.metric=="mdiff" | balance.metric=="all"){
-          rtab[i,"Mdiff"] <- mdiff(caliperdat=rdata,alldat=data,mvars=names(rdata)[-which(names(rdata) %in% treatment)] ,tvar=treatment, wt=mm$weight)
-        }
-        if(balance.metric=="mdisc" | balance.metric=="all"){
-          rtab[i,"Mdisc"] <- mdisc(caliperdat=rdata,adist=alldist, wt=mm$weight)
-        }
-        ## loop through the levels of treatment
-        for(j in 1:length(g.names)){
-          rtab[i,paste("G",g.names[j],sep="")] <- sum(rdata[[treatment]]==g.names[j] & mm$weight > 0)
-          rtab[i,paste("PercG",g.names[j],sep="")] <- sum(rdata[[treatment]]==g.names[j] & mm$weight > 0)/sum(rdata[[treatment]]==g.names[j])
-          if(length(unique(as.character(mm$method))) > 1){warning("More than one method specified.  Using the first.")}
-        }
-        rtab[i,"Relaxed"] <- "user"
-        rtab[i,"Method"] <- as.character(mm$method)[1]
-        rtab[i,"Call"] <- as.character(mm$method)[1]
-      }
-      if(progress==T){close(pb)}
-      tab <- rbind(tab, rtab)
-
-    }
-
-
-
-    
-    ## Finalize output
-    if(balance.metric=="L1" | balance.metric=="all"){
-      idx <- order(tab[, "ML1"])
-      tab <- tab[idx, ]
-    }
-    if(balance.metric=="mdiff"){
-      idx <- order(tab[, "Mdiff"])
-      tab <- tab[idx, ]
-    }
-    if(balance.metric=="mdisc"){
-      idx <- order(tab[, "Mdisc"])
-      tab <- tab[idx, ]
-    }
-    rownames(tab) <- 1:(dim(tab)[1])
-	out <- list(space = tab)
-	out$L1breaks <- medianCP
-	out$raw.profile <- imb0
-	out$tab <- obj$tab  ## this is only the table for the last cem anyway.  And it makes it crash if there are no cems.
-    out$medianCP <- medianCP
-	out$medianL1 <- medianL1
-	out$coars <- coars[idx]
-	if(keep.weights)
-	 out$weights <- weights[idx]
-	out$n.coars <- n.coars
-        ## make a filler for now
-        tmp.list <- c()
-        for(i in 1:length(vnames)){
-          tmp.list[[i]] <- c(0,0)
-        }
-        names(tmp.list) <- vnames
-        for(i in 1:length(out$coars)){
-          if(is.null(out$coars[[i]])){
-            out$coars[[i]] <- tmp.list
-          }
-        }
-	out$match <- obj  ## again, this would just be the latest cem
-                        ## but I use it for running CEM from the GUI.
-        #out$data <- original.data
-        out$data <- data
-      ## add the mahalanobis discrepancy so we can add new matches to the plot
-      out$alldist <- alldist
-    class(out) <- "spacegraph"
-	
-    ## give a warning about nonconverged pscores
-    if(exists("myps")){
-      if(nrow(na.omit(myps$tab)) < nrow(myps$tab)){
-        print(paste("WARNING: ",nrow(myps$tab)-nrow(na.omit(myps$tab))," of ",nrow(myps$tab),
-            " propensity score models did not converge",sep=""))
-    }
-    }
-    #if (plot) 
-    #  #plot(out,data=data,explore=interactive())
-    #      spacegraph.plot(out,explore=interactive())
-	
-    return(invisible(out))
-}
 
 
 ###################################################################
@@ -1453,7 +1008,7 @@ psm <- function(formula, data, ratio=1, caliper=0, linear.pscore=FALSE,rawCP){
   }
   mymod <- (glm(formula, data, family=(binomial(link="logit"))))
   
-  if(mymod$converged==F){return}
+  if(mymod$converged==F){return(NULL)}
   ps <- mymod$fitted.values
   if(linear.pscore==T){
     ps <- log(ps/(1-ps))
@@ -1636,7 +1191,6 @@ group.var <- function(x, groups){
     tmp <- numeric(n)
     ngr <- length(groups)
     all.idx <- NULL
-#    cat(sprintf("n=%d, ngr=%d\n", n, ngr))
      for(i in 1:ngr){
       idx <- which(x %in% groups[[i]])
        if(length(idx)>0){
@@ -2265,117 +1819,112 @@ plot.spacegraph <- function(...){
 spacegraph.plot2 <- function(obj, objname=NULL, group="1", 
                             method.col=list(cem="#0000ff75",mdm="#ff000075",
                                             psm="#00ff0075",matchit="#FF880075"),
+                            scale.var=TRUE,
+                            verbose=1,
                             ...){
 	if(class(obj) != "spacegraph")
 	  stop("obj must be of class `spacegraph'")
-
-        if(is.null(objname)){
-          obj.name <- match.call()["obj"]
-          obj.name <- gsub("()","",obj.name, fixed=T)
+  spE <- new.env()
+  spE$obj <- obj
+  obj <- NULL
+  if(is.null(objname)){
+          spE$obj.name <- match.call()["obj"]
+          spE$obj.name <- gsub("()","",spE$obj.name, fixed=T)
         } else {
-          obj.name <- objname
+          spE$obj.name <- objname
         }
         
-        data <- obj$data
-        obj$space <- na.omit(obj$space)  ## this solves a problem
+   
+  data <- spE$obj$data
+  spE$obj$space <- na.omit(spE$obj$space)  ## this solves a problem
                                          ## when some solutions have NA in the table
 	g <- sprintf("G%s",group)
-	n <-  obj$space[[g]]
-	ML1 <- obj$space$ML1
-	Relaxed <- obj$space$Relaxed
-        Method <- obj$space$Method
-        Call <- obj$space$Call
+	spE$n <-  spE$obj$space[[g]]
+	spE$ML1 <- spE$obj$space$ML1
+	spE$Relaxed <- spE$obj$space$Relaxed
+	spE$Method <- spE$obj$space$Method
+	spE$Call <- spE$obj$space$Call
         ## rename the stuff in the call
-        for(i in 1:length(Call)){
-          Call[i] <- gsub("obj$",paste(obj.name,"$",sep=""),Call[i],fixed=T)
-        }
-	class <- rep("relax", length(n))
-	id.raw <- which(Relaxed=="<raw>")
-	id.start <- which(Relaxed=="<start>") 
-	class[ id.raw ] <- "raw"
-	if(length(id.start)>0)
-		class[ id.start ] <- "start"
-	ids <- (1:length(n))[-c(id.raw, id.start)]
-	name.vars <- names(obj$coars[[1]])
+  for(i in 1:length(spE$Call)){
+          spE$Call[i] <- gsub("obj$",paste(spE$obj.name,"$",sep=""),spE$Call[i],fixed=T)
+  }
+	spE$class <- rep("relax", length(spE$n))
+	id.raw <- which(spE$Relaxed=="<raw>")
+	id.start <- which(spE$Relaxed=="<start>") 
+	spE$class[ id.raw ] <- "raw"
+	if(length(id.start)>0){
+	  spE$class[ id.start ] <- "start"
+	}
+	ids <- (1:length(spE$n))[-c(id.raw, id.start)]
+	name.vars <- names(spE$obj$coars[[1]])
 	n.vars <- length(name.vars)
-	tab <- data.frame(n=n, ML1=ML1, class=class)
-	main.txt <- sprintf("Total units=%d, ML1=%.3f", n[id.raw], ML1[id.raw])
+	tab <- data.frame(n=spE$n, ML1=spE$ML1, class=spE$class)
+	main.txt <- sprintf("Total units=%d, ML1=%.3f", spE$n[id.raw], spE$ML1[id.raw])
 	
-	if(length(id.start)>0)
-		main.txt <- sprintf("Initial matched units=%d, ML1=%.3f", n[id.start], ML1[id.start])
-
+	if(length(id.start)>0){
+		main.txt <- sprintf("Initial matched units=%d, ML1=%.3f", spE$n[id.start], spE$ML1[id.start])
+  }
         ## make different colors of dots for the different methods
-        dotcol <- rep("cyan",length(ids))
+  dotcol <- rep("cyan",length(ids))
         ## get colors for other methods...
-        approved.methods <- c("raw","cem","psm","mdm","matchit")
-        needcol <- unique(Method)[unique(Method) %in% approved.methods==F]
+  approved.methods <- c("raw","cem","psm","mdm","matchit")
+  needcol <- unique(spE$Method)[unique(spE$Method) %in% approved.methods==F]
 
 
         ## I decided that it's easier to specify my own colors
-        colz <- c("#CC00FF75","darkolivegreen","gray50",
+  colz <- c("#CC00FF75","darkolivegreen","gray50",
                   "lavenderblush","peru")
-        rcol <- colz[1:length(needcol)]
+  rcol <- colz[1:length(needcol)]
         
-        ll <- length(approved.methods)-1
-        if(length(needcol)>0){
-          for(i in (1:length(needcol) + ll)){
+  ll <- length(approved.methods)-1
+  if(length(needcol)>0){
+      for(i in (1:length(needcol) + ll)){
             pnames <- names(method.col)
             method.col[[i]] <- rcol[i-ll]
             names(method.col) <- c(pnames,needcol[i-ll])
-          }
-        }
+      }
+  }
 
-        for(i in 1:length(method.col)){
-          dotcol[Method==names(method.col)[i]] <-  method.col[[names(method.col)[i]]]
-        }
+  for(i in 1:length(method.col)){
+          dotcol[spE$Method==names(method.col)[i]] <-  method.col[[names(method.col)[i]]]
+  }
        
 	#dotcol <- rgb(0.2,0.2,0.8)
 	#selcol <- rgb(0.8,0.8,0.2)
-        selcol <- "black"
+  selcol <- "black"
       ## set the plotting args
-      myxlab <- "number matched, scaled as 1/sqrt(matched)"
-      myylab <- "median of L1 profile"
-      myylim <- c(0,range(ML1)[2])
-      myxlim <- range(1/sqrt(n))
-      ## get user-specified xlim and ylim values
-      #if(match.call()["xlim"] != "NULL()"){
-      #  xli <- gsub("()","",match.call()["xlim"],fixed=T)
-      #  xli2 <- strsplit(xli,",")[[1]]
-      #  lim1 <- as.numeric(gsub(" *","",gsub("c(","",xli2[1], fixed=T)))
-      #  lim2 <- as.numeric(gsub(" *","",gsub(")","",xli2[2], fixed=T)))
-      #  myxlim <- c(1/sqrt(lim1),1/sqrt(lim2))
-      #}
-      #if(match.call()["ylim"] != "NULL()"){
-      #  xli <- gsub("()","",match.call()["ylim"],fixed=T)
-      #  xli2 <- strsplit(xli,",")[[1]]
-      #  lim1 <- as.numeric(gsub(" *","",gsub("c(","",xli2[1], fixed=T)))
-      #  lim2 <- as.numeric(gsub(" *","",gsub(")","",xli2[2], fixed=T)))
-      #  myylim <- c(lim1,lim2)
-      #}
+  myylab <- "median of L1 profile"
+  myylim <- c(0,range(spE$ML1)[2])
+      
 
-      ## collect any user-specified plotting args that conflict:
-      #if(match.call()["main"] != "NULL()"){main.txt <- gsub("()","",match.call()["main"],fixed=T)}
-      #if(match.call()["xlab"] != "NULL()"){myxlab <- gsub("()","",match.call()["xlab"],fixed=T)}
-      #if(match.call()["ylab"] != "NULL()"){myylab <- gsub("()","",match.call()["ylab"],fixed=T)}
- 
-	plot(1/sqrt(n[ids]), ML1[ids],
-         xlab=myxlab, 
-		 ylab=myylab, 
+  if(scale.var==FALSE){
+        spE$n <- 1/spE$n^2
+  }
+  myxlab <- ifelse(scale.var,"number matched, scaled as 1/sqrt(matched)","number matched")
+  myxlim <- range(1/sqrt(spE$n))
+  if(scale.var==FALSE){
+    myxlim <- rev(myxlim)
+  }
+      
+	plot(1/sqrt(spE$n[ids]), spE$ML1[ids],
+         xlab=myxlab,	 ylab=myylab, 
          pch=20, col=dotcol[ids], ylim=myylim, xlim=myxlim,
          main=main.txt, axes=FALSE)        
 	axis(2)
-	#x1 <- pretty( 1/sqrt(n), 5)
-      x1 <- pretty( myxlim, 5)
-	axis(1, x1, round(1/x1^2))
-	box()
-	points(1/sqrt(n[id.raw]), ML1[id.raw],   col="black", pch=21,bg="white")
-	text(1/sqrt(n[id.raw]), ML1[id.raw], "raw",  col="black",adj=-0.5, cex=0.7)
-	if(length(id.start)>0){
-		points(1/sqrt(n[id.start]), ML1[id.start],   col="green", pch=20)
-		text(1/sqrt(n[id.start]), ML1[id.start], "start",  col="green",adj=-0.5, cex=0.7)
+	x1 <- pretty( myxlim, 5)
+	if(scale.var){
+  	  axis(1, x1, round(1/x1^2))
+	} else {
+	    axis(1, x1, x1)
 	}
-
-
+	box()
+	points(1/sqrt(spE$n[id.raw]), spE$ML1[id.raw],   col="black", pch=21,bg="white")
+	text(1/sqrt(spE$n[id.raw]), spE$ML1[id.raw], "raw",  col="black",adj=-0.5, cex=0.7)
+	if(length(id.start)>0){
+		  points(1/sqrt(spE$n[id.start]), spE$ML1[id.start],   col="green", pch=20)
+		  text(1/sqrt(spE$n[id.start]), spE$ML1[id.start], "start",  col="green",adj=-0.5, cex=0.7)
+  }
+	
 }
 
 
@@ -2393,25 +1942,29 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
                             method.col=list(cem="#0000ff75",mdm="#ff000075",
                                             psm="#00ff0075",matchit="#FF880075"),
                             plot.call=NULL,balance.metric="L1",
-                            N="treated",scale.var=TRUE,...){
+                            N="treated",scale.var=TRUE,
+                            verbose=1,
+                            ...){
 	if(!interactive() | !explore){
             if(match.call()["xlim"] != "NULL()" | match.call()["ylim"] != "NULL()")
-              cat("cannot specify xlim or ylim with explore=F\n")
+              warning("cannot specify xlim or ylim with explore=F\n")
             if(match.call()["main"] != "NULL()" | match.call()["xlab"] != "NULL()" | match.call()["ylab"] != "NULL()")
-              cat("cannot specify main, xlab, or ylab with explore=F\n")
-		spacegraph.plot2(obj, group, method.col=method.col)
+              warning("cannot specify main, xlab, or ylab with explore=F\n")
+	  	spacegraph.plot2(obj, group, method.col=method.col, scale.var=scale.var)
 		return(NULL)	
 	}
 	
-	
+	spE <- new.env()
 	if(class(obj) != "spacegraph")
-	stop("obj must be of class `spacegraph'")
-
+	  stop("obj must be of class `spacegraph'")
+	spE$obj <- obj
+	obj <- NULL
+	
 	
 	haveTCL <- interactive()
 	if(!capabilities("tcltk")){
 		haveTCL <- FALSE	
-		cat("\ntcltk support is absent")
+		warning("\ntcltk support is absent")
 	}
 	
 	if(haveTCL){
@@ -2425,14 +1978,14 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 	}
 
         if(is.null(objname)){
-          obj.name <- match.call()["obj"]
-          obj.name <- gsub("()","",obj.name, fixed=T)
+          spE$obj.name <- match.call()["obj"]
+          spE$obj.name <- gsub("()","",spE$obj.name, fixed=T)
         } else {
-          obj.name <- objname
+          spE$obj.name <- objname
         }
         
-        data <- obj$data
-        obj$space <- na.omit(obj$space)
+        data <- spE$obj$data
+        spE$obj$space <- na.omit(spE$obj$space)
        # keepme <- rownames(na.omit(obj$space[-which(names(obj$space) %in% c("ML1","Mdiff"))]))
        # obj$space <- obj$space[keepme,]  ## this solves a problem
                                          ## when some solutions have NA in the table
@@ -2441,32 +1994,32 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 
 
 	g <- sprintf("G%s",group)
-	n <-  obj$space[[g]]
+	spE$n <-  spE$obj$space[[g]]
         ## Allow the x-axis to be different
         ## Note, this is over-riding "group"
         if(N=="treated"){
           group <- "1"
 	  g <- sprintf("G%s",group)
-	  n <-  obj$space[[g]]
+	  spE$n <-  spE$obj$space[[g]]
         }
         if(N=="control"){
           group <- "0"
 	  g <- sprintf("G%s",group)
-	  n <-  obj$space[[g]]
+	  spE$n <-  spE$obj$space[[g]]
         }
         if(N=="all"){
           group1 <- "1"
 	  g1 <- sprintf("G%s",group1)
           group0 <- "0"
 	  g0 <- sprintf("G%s",group0)
-	  n <-  obj$space[[g1]] + obj$space[[g0]]
+	  spE$n <-  spE$obj$space[[g1]] + spE$obj$space[[g0]]
         }
-	ML1 <- obj$space$ML1
-      Mdiff <- obj$space$Mdiff
-      Mdisc <- obj$space$Mdisc
-      alldist <- obj$alldist
+	  spE$ML1 <- spE$obj$space$ML1
+    Mdiff <- spE$obj$space$Mdiff
+    Mdisc <- spE$obj$space$Mdisc
+    alldist <- spE$obj$alldist
       ## some warnings if you try to specify the wrong balance metric
-      if(balance.metric=="L1" & length(na.omit(ML1))!=length(ML1)){
+      if(balance.metric=="L1" & length(na.omit(spE$ML1))!=length(spE$ML1)){
         stop("Missing values for L1")
       }
       if(balance.metric=="mdiff" & length(na.omit(Mdiff))!=length(Mdiff)){
@@ -2478,41 +2031,41 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
       ## NOTE: If Mdiff is specified, we name it "ML1" here so that the 
       ##       function will still run through.
       if(balance.metric=="mdiff"){
-        ML1 <- obj$space$Mdiff
+        spE$ML1 <- spE$obj$space$Mdiff
       }
       if(balance.metric=="mdisc"){
-        ML1 <- obj$space$Mdisc
+        spE$ML1 <- spE$obj$space$Mdisc
       }
-	Relaxed <- obj$space$Relaxed
-        Method <- obj$space$Method
-        Call <- obj$space$Call
+	spE$Relaxed <- spE$obj$space$Relaxed
+	spE$Method <- spE$obj$space$Method
+	spE$Call <- spE$obj$space$Call
         ## rename the stuff in the call
-        for(i in 1:length(Call)){
-          Call[i] <- gsub("obj$",paste(obj.name,"$",sep=""),Call[i],fixed=T)
+        for(i in 1:length(spE$Call)){
+          spE$Call[i] <- gsub("obj$",paste(spE$obj.name,"$",sep=""),spE$Call[i],fixed=T)
         }
-	class <- rep("relax", length(n))
-	id.raw <- which(Relaxed=="<raw>")
-	id.start <- which(Relaxed=="<start>") 
+	class <- rep("relax", length(spE$n))
+	id.raw <- which(spE$Relaxed=="<raw>")
+	id.start <- which(spE$Relaxed=="<start>") 
 	class[ id.raw ] <- "raw"
 	if(length(id.start)>0)
 		class[ id.start ] <- "start"
-	ids <- (1:length(n))[-c(id.raw, id.start)]
-	name.vars <- names(obj$coars[[1]])
+	ids <- (1:length(spE$n))[-c(id.raw, id.start)]
+	name.vars <- names(spE$obj$coars[[1]])
 	n.vars <- length(name.vars)
-	tab <- data.frame(n=n, ML1=ML1, class=class)
+	tab <- data.frame(n=spE$n, ML1=spE$ML1, class=class)
 	#main.txt <- sprintf("Total units=%d, ML1=%.3f", n[id.raw], ML1[id.raw])
-      main.txt <- sprintf("Total units=%d", n[id.raw])
+      main.txt <- sprintf("Total units=%d", spE$n[id.raw])
 
 	
 	if(length(id.start)>0){
-		main.txt <- sprintf("Initial matched units=%d, ML1=%.3f", n[id.start], ML1[id.start])
+		main.txt <- sprintf("Initial matched units=%d, ML1=%.3f", spE$n[id.start], spE$ML1[id.start])
          }
 
         ## make different colors of dots for the different methods
         dotcol <- rep("cyan",length(ids))
         ## get colors for other methods...
         approved.methods <- c("raw","cem","psm","mdm","matchit")
-        needcol <- unique(Method)[unique(Method) %in% approved.methods==F]
+        needcol <- unique(spE$Method)[unique(spE$Method) %in% approved.methods==F]
 
 
         ## I decided that it's easier to specify my own colors
@@ -2534,30 +2087,30 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
         }
 
         for(i in 1:length(method.col)){
-          dotcol[Method==names(method.col)[i]] <-  method.col[[names(method.col)[i]]]
+          dotcol[spE$Method==names(method.col)[i]] <-  method.col[[names(method.col)[i]]]
         }
        
 	#dotcol <- rgb(0.2,0.2,0.8)
 	#selcol <- rgb(0.8,0.8,0.2)
         selcol <- "black"
       ## set the plotting args
-      if(scale.var==F)
-        n <- 1/n^2
-      myxlab <- "number matched, scaled as 1/sqrt(matched)"
-      myxlim <- range(1/sqrt(n))
-      if(scale.var==F)
+      if(scale.var==FALSE)
+        spE$n <- 1/spE$n^2
+      myxlab <- ifelse(scale.var,"number matched, scaled as 1/sqrt(matched)","number matched")
+      myxlim <- range(1/sqrt(spE$n))
+      if(scale.var==FALSE)
         myxlim <- rev(myxlim)
       if(balance.metric=="L1"){
         myylab <- "L1"
-        myylim <- c(0,range(ML1)[2])
+        myylim <- c(0,range(spE$ML1)[2])
       }
       if(balance.metric=="mdiff"){
         myylab <- "Average Difference in Means"
-        myylim <- c(0,range(ML1)[2])
+        myylim <- c(0,range(spE$ML1)[2])
       }
       if(balance.metric=="mdisc"){
         myylab <- "Average Mahalanobis Discrepancy"
-        myylim <- c(0,range(ML1)[2])
+        myylim <- c(0,range(spE$ML1)[2])
       }
       
 
@@ -2587,7 +2140,7 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
       if(plot.call["ylab"] != "NULL()"){myylab <- gsub("()","",plot.call["ylab"],fixed=T)}
       
         
-	plot(1/sqrt(n[ids]), ML1[ids],
+	plot(1/sqrt(spE$n[ids]), spE$ML1[ids],
          xlab=myxlab, 
 		 ylab=myylab, 
          pch=20, col=dotcol[ids], ylim=myylim, xlim=myxlim,
@@ -2595,28 +2148,28 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 	axis(2)
 	#x1 <- pretty( 1/sqrt(n), 5)
       x1 <- pretty( myxlim, 5)
-        if(scale.var==T)
+        if(scale.var==TRUE)
 	  axis(1, x1, round(1/x1^2))
-        if(scale.var==F)
+        if(scale.var==FALSE)
           axis(1, x1, x1)
 	box()
-	points(1/sqrt(n[id.raw]), ML1[id.raw],   col="black", pch=21,bg="white")
-	text(1/sqrt(n[id.raw]), ML1[id.raw], "raw",  col="black",adj=-0.5, cex=0.7)
+	points(1/sqrt(spE$n[id.raw]), spE$ML1[id.raw],   col="black", pch=21,bg="white")
+	text(1/sqrt(spE$n[id.raw]), spE$ML1[id.raw], "raw",  col="black",adj=-0.5, cex=0.7)
 	if(length(id.start)>0){
-		points(1/sqrt(n[id.start]), ML1[id.start],   col="green", pch=20)
-		text(1/sqrt(n[id.start]), ML1[id.start], "start",  col="green",adj=-0.5, cex=0.7)
+		points(1/sqrt(spE$n[id.start]), spE$ML1[id.start],   col="green", pch=20)
+		text(1/sqrt(spE$n[id.start]), spE$ML1[id.start], "start",  col="green",adj=-0.5, cex=0.7)
 	}
 	idx.sav <- id.raw
 	if(length(id.start)>0)
 		idx.sav <- id.start
 
-	old.idx <- NULL
-	xy <- xy.coords(1/sqrt(n), ML1)
+	spE$old.idx <- NULL
+	spE$xy <- xy.coords(1/sqrt(spE$n), spE$ML1)
 	
- 	tmp.br <- obj$coars[[2]]
+ 	spE$tmp.br <- spE$obj$coars[[2]]
 	if(length(id.start)>0)
-		tmp.br <- obj$coars[[id.start]]
-	new.br <- tmp.br
+		spE$tmp.br <- spE$obj$coars[[id.start]]
+	spE$new.br <- spE$tmp.br
 
 	
 	goOn <- TRUE
@@ -2630,19 +2183,19 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 		tcvars <- list()
 
                
-            if(scale.var==T)   
-		  infoText <- tclVar( sprintf("Raw Data: Total units=%d, ML1=%.3f", n[id.raw], ML1[id.raw]) )
-            if(scale.var==F)   
-		  infoText <- tclVar( sprintf("Raw Data: Total units=%d, ML1=%.3f", round(1/sqrt(n[id.raw]),0), ML1[id.raw]) )
-                callInfo <- tclVar(Call[id.raw])
+            if(scale.var==TRUE)   
+		  infoText <- tclVar( sprintf("Raw Data: Total units=%d, ML1=%.3f", spE$n[id.raw], spE$ML1[id.raw]) )
+            if(scale.var==FALSE)   
+		  infoText <- tclVar( sprintf("Raw Data: Total units=%d, ML1=%.3f", round(1/sqrt(spE$n[id.raw]),0), spE$ML1[id.raw]) )
+                callInfo <- tclVar(spE$Call[id.raw])
                 
                 if(length(id.start)>0)
-                        if(scale.var==T)
-                          infoText <- tclVar( sprintf("Method=%s: Matched units=%d, ML1=%.3f", Method[id.start],n[id.start], ML1[id.start]) )
-                        if(scale.var==F)
-                          infoText <- tclVar( sprintf("Method=%s: Matched units=%d, ML1=%.3f", Method[id.start],round(1/sqrt(n[id.start]),0), ML1[id.start]) )
-                        callInfo <- tclVar(Call[id.start])
-                        callText <- Call[id.start]
+                        if(scale.var==TRUE)
+                          infoText <- tclVar( sprintf("Method=%s: Matched units=%d, ML1=%.3f", spE$Method[id.start],spE$n[id.start], spE$ML1[id.start]) )
+                        if(scale.var==FALSE)
+                          infoText <- tclVar( sprintf("Method=%s: Matched units=%d, ML1=%.3f", spE$Method[id.start],round(1/sqrt(spE$n[id.start]),0), spE$ML1[id.start]) )
+                        callInfo <- tclVar(spE$Call[id.start])
+                        callText <- spE$Call[id.start]
 		tkpack(tklabel(tt, textvariable=infoText))
 
 
@@ -2656,113 +2209,116 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
                 ## call
                 OnCall <- function(){
 			other.args <- NULL
-			cat("\n... running the call ...\n")
+			if(verbose>=1)
+			  cat("\n... running the call ...\n")
 			tmpc <- tclvalue( callInfo )
 			valid <- try(eval(parse(text=tmpc)), silent = TRUE)
-			if( class(valid) == "try-error"){
-				cat(sprintf("\nError in call specification. Exiting.\n", tmpc) )
-                return
+			if( class(valid) == "try-error" ){
+			  if(verbose>=1)
+  				cat(sprintf("\nError in call specification. Exiting.\n", tmpc) )
+       return(NULL)
 			}
                   tmp.mat <- eval(parse(text= tclvalue(callInfo)))
                  
 			tclServiceMode(TRUE)
                   if(class(tmp.mat)=="cem.match"){
                       if(balance.metric=="L1"){
-			      tmp.ML1 <- L1.meas(obj$match$groups, data=data[,obj$match$vars], breaks=obj$medianCP, weights=tmp.mat$w)$L1
+			      tmp.ML1 <- L1.meas(spE$obj$match$groups, data=data[,spE$obj$match$vars], breaks=spE$obj$medianCP, weights=tmp.mat$w)$L1
 			    }
                       if(balance.metric=="mdiff"){
-                        tmp.ML1 <- mdiff(caliperdat=data[,c(obj$match$treatment, obj$match$vars)],alldat=data[,c(obj$match$treatment, obj$match$vars)],mvars=tmp.mat$vars,tvar=obj$match$treatment, wt=tmp.mat$w)
+                        tmp.ML1 <- mdiff(caliperdat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],alldat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],mvars=tmp.mat$vars,tvar=spE$obj$match$treatment, wt=tmp.mat$w)
                       }
                       if(balance.metric=="mdisc"){
-                        tmp.ML1 <- mdisc2(caliperdat=data[,c(obj$match$treatment, obj$match$vars)],alldat=data[,c(obj$match$treatment, obj$match$vars)],mvars=tmp.mat$vars,tvar=obj$match$treatment, wt=tmp.mat$w)
+                        tmp.ML1 <- mdisc2(caliperdat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],alldat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],mvars=tmp.mat$vars,tvar=spE$obj$match$treatment, wt=tmp.mat$w)
                       }
                       tmp.n <- tmp.mat$tab["Matched", g] 
-			    len.c <- length(n)
-			    n[len.c+1] <<- tmp.n 	 
-			    ML1[len.c+1] <<- tmp.ML1 	 
-			    Relaxed[len.c+1] <<- "<new>"
-			    Method[len.c+1] <<- "cem"
-              	    Call[len.c+1] <<- tclvalue(callInfo)
-			    obj$coars[[len.c+1]] <<- new.br	
-			    xy <<- xy.coords(1/sqrt(n), ML1)
+                      #print(str(tmp.mat))
+			    len.c <- length(spE$n)
+			    spE$n[len.c+1] <- tmp.n 	 
+			    spE$ML1[len.c+1] <- tmp.ML1 	 
+			    spE$Relaxed[len.c+1] <- "<new>"
+			    spE$Method[len.c+1] <- "cem"
+          spE$Call[len.c+1] <- tclvalue(callInfo)
+          spE$obj$coars[[len.c+1]] <- spE$new.br	
+          spE$xy <- xy.coords(1/sqrt(spE$n), spE$ML1)
 			    update.imbplot(len.c+1)	
                   }
                   if(class(tmp.mat)=="psm.match"){
                       tvar <- as.character(as.formula(gsub("()","",tmp.mat$call["formula"],fixed=T)))[2]
                       if(balance.metric=="L1"){
-                        tmp.ML1 <- L1.meas(tmp.mat$match.dat[[tvar]], data=tmp.mat$match.dat[,obj$match$vars], breaks=obj$medianCP, weights=tmp.mat$match.dat[,"weights"])$L1
+                        tmp.ML1 <- L1.meas(tmp.mat$match.dat[[tvar]], data=tmp.mat$match.dat[,spE$obj$match$vars], breaks=spE$obj$medianCP, weights=tmp.mat$match.dat[,"weights"])$L1
                       }
                       if(balance.metric=="mdiff"){
-                        tmp.ML1 <- mdiff(caliperdat=tmp.mat$match.dat[,c(tvar,obj$match$vars)],alldat=obj$data[,c(tvar,obj$match$vars)],mvars=obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
+                        tmp.ML1 <- mdiff(caliperdat=tmp.mat$match.dat[,c(tvar,spE$obj$match$vars)],alldat=spE$obj$data[,c(tvar,spE$obj$match$vars)],mvars=spE$obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
                       }
                       if(balance.metric=="mdisc"){
-                        tmp.ML1 <- mdisc2(caliperdat=tmp.mat$match.dat[,c(tvar,obj$match$vars)],alldat=obj$data[,c(tvar,obj$match$vars)],mvars=obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
+                        tmp.ML1 <- mdisc2(caliperdat=tmp.mat$match.dat[,c(tvar,spE$obj$match$vars)],alldat=spE$obj$data[,c(tvar,spE$obj$match$vars)],mvars=spE$obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
                       }
                       tmp.n <- tmp.mat$N[group]
-                      len.c <- length(n)
-			    n[len.c+1] <<- tmp.n 	 
-			    ML1[len.c+1] <<- tmp.ML1 	 
-			    Relaxed[len.c+1] <<- "<new>"
-			    Method[len.c+1] <<- "psm"
-              	    Call[len.c+1] <<- tclvalue(callInfo)
+                      len.c <- length(spE$n)
+                      spE$n[len.c+1] <- tmp.n 	 
+                      spE$ML1[len.c+1] <- tmp.ML1 	 
+                      spE$Relaxed[len.c+1] <- "<new>"
+                      spE$Method[len.c+1] <- "psm"
+                      spE$Call[len.c+1] <- tclvalue(callInfo)
                        ## make a filler for now
-                       new.br <- c()
+                       spE$new.br <- c()
                        for(i in 1:length(name.vars)){
-                         new.br[[i]] <- c(0,0)
+                         spE$new.br[[i]] <- c(0,0)
                        }
-                       names(new.br) <- name.vars	 
-			    obj$coars[[len.c+1]] <<- new.br	
-			    xy <<- xy.coords(1/sqrt(n), ML1)
-			    update.imbplot(len.c+1)
+                       names(spE$new.br) <- name.vars	 
+                       spE$obj$coars[[len.c+1]] <- spE$new.br	
+                       spE$xy <- xy.coords(1/sqrt(spE$n), spE$ML1)
+			                update.imbplot(len.c+1)
                   }
                   if(class(tmp.mat)=="mdm.match"){
                       tvar <- as.character(as.formula(gsub("()","",tmp.mat$call["formula"],fixed=T)))[2]
                       if(balance.metric=="L1"){
-                        tmp.ML1 <- L1.meas(tmp.mat$match.dat[[tvar]], data=tmp.mat$match.dat[,obj$match$vars], 
-                                         breaks=obj$medianCP, weights=tmp.mat$match.dat[,"weights"])$L1
+                        tmp.ML1 <- L1.meas(tmp.mat$match.dat[[tvar]], data=tmp.mat$match.dat[,spE$obj$match$vars], 
+                                         breaks=spE$obj$medianCP, weights=tmp.mat$match.dat[,"weights"])$L1
                       }
                       if(balance.metric=="mdiff"){
-                        tmp.ML1 <- mdiff(caliperdat=tmp.mat$match.dat[,c(tvar,obj$match$vars)],alldat=obj$data[,c(tvar,obj$match$vars)],mvars=obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
+                        tmp.ML1 <- mdiff(caliperdat=tmp.mat$match.dat[,c(tvar,spE$obj$match$vars)],alldat=spE$obj$data[,c(tvar,spE$obj$match$vars)],mvars=spE$obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
                       }
                       if(balance.metric=="mdisc"){
-                        tmp.ML1 <- mdisc2(caliperdat=tmp.mat$match.dat[,c(tvar,obj$match$vars)],alldat=obj$data[,c(tvar,obj$match$vars)],mvars=obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
+                        tmp.ML1 <- mdisc2(caliperdat=tmp.mat$match.dat[,c(tvar,spE$obj$match$vars)],alldat=spE$obj$data[,c(tvar,spE$obj$match$vars)],mvars=spE$obj$match$vars,tvar=tvar, wt=tmp.mat$match.dat[,"weights"])
                       }
                       tmp.n <- tmp.mat$N[group]
-                      len.c <- length(n)
-			    n[len.c+1] <<- tmp.n 	 
-			    ML1[len.c+1] <<- tmp.ML1 	 
-			    Relaxed[len.c+1] <<- "<new>"
-			    Method[len.c+1] <<- "mdm"
-              	    Call[len.c+1] <<- tclvalue(callInfo)
+                      len.c <- length(spE$n)
+                      spE$n[len.c+1] <- tmp.n 	 
+                      spE$ML1[len.c+1] <- tmp.ML1 	 
+                      spE$Relaxed[len.c+1] <- "<new>"
+                      spE$Method[len.c+1] <- "mdm"
+                      spE$Call[len.c+1] <- tclvalue(callInfo)
                        ## make a filler for now
-                       new.br <- c()
+                       spE$new.br <- c()
                        for(i in 1:length(name.vars)){
-                         new.br[[i]] <- c(0,0)
+                         spE$new.br[[i]] <- c(0,0)
                        }
-                       names(new.br) <- name.vars	 
-			    obj$coars[[len.c+1]] <<- new.br	
-			    xy <<- xy.coords(1/sqrt(n), ML1)
+                       names(spE$new.br) <- name.vars	 
+			    spE$obj$coars[[len.c+1]] <- spE$new.br	
+			    spE$xy <- xy.coords(1/sqrt(spE$n), spE$ML1)
 			    update.imbplot(len.c+1)             
                   }
                   if(class(tmp.mat)=="matchit"){
                       ## Note, this is not changed to allow mean differences
-			    tmp.ML1 <- L1.meas(obj$match$groups, data=data[,obj$match$vars], 
-                                         breaks=obj$medianCP, weights=tmp.mat$weights)$L1
+			    tmp.ML1 <- L1.meas(spE$obj$match$groups, data=data[,spE$obj$match$vars], 
+                                         breaks=spE$obj$medianCP, weights=tmp.mat$weights)$L1
 			    tmp.n <- tmp.mat$nn["Matched", "Treated"]
-                      len.c <- length(n)
-			    n[len.c+1] <<- tmp.n 	 
-			    ML1[len.c+1] <<- tmp.ML1 	 
-			    Relaxed[len.c+1] <<- "<new>"
-			    Method[len.c+1] <<- "matchit"
-              	    Call[len.c+1] <<- tclvalue(callInfo)
+                      len.c <- length(spE$n)
+                      spE$n[len.c+1] <- tmp.n 	 
+                      spE$ML1[len.c+1] <- tmp.ML1 	 
+                      spE$Relaxed[len.c+1] <- "<new>"
+                      spE$Method[len.c+1] <- "matchit"
+                      spE$Call[len.c+1] <- tclvalue(callInfo)
                        ## make a filler for now
-                       new.br <- c()
+                       spE$new.br <- c()
                        for(i in 1:length(name.vars)){
-                         new.br[[i]] <- c(0,0)
+                         spE$new.br[[i]] <- c(0,0)
                        }
-                       names(new.br) <- name.vars	 
-			    obj$coars[[len.c+1]] <<- new.br	
-			    xy <<- xy.coords(1/sqrt(n), ML1)
+                       names(spE$new.br) <- name.vars	 
+			    spE$obj$coars[[len.c+1]] <- spE$new.br	
+			    spE$xy <- xy.coords(1/sqrt(spE$n), spE$ML1)
 			    update.imbplot(len.c+1)             
                   }
                 }
@@ -2772,91 +2328,80 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 
                 
 
-                ## I was attempting to make a text box so that you
-                ## could see the whole call at once, but I couldn't
-                ## get it to work.
-#                txt <- tktext(tt, width="100")
-#                #entry.text <- tkinsert(entry.call, callInfo)
-#                tkinsert(txt,"end", callText)
-#	        tkpack( tklabel(tt, text=sprintf("Call: ") ))
-#		tkpack(  txt )
-
-                #tkpack(tktext(tt, bg="white",font="courier",width="100"))
-
-		n.tmp.br <- length(tmp.br)
-		for(i in 1:n.tmp.br){
-			tcvars[[i]] <- tclVar( deparse( round(tmp.br[[i]], 2), width.cutoff=500) )  
+   
+		
+		spE$n.tmp.br <- length(spE$tmp.br)
+		for(i in 1:spE$n.tmp.br){
+			tcvars[[i]] <- tclVar( deparse( round(spE$tmp.br[[i]], 2), width.cutoff=500) )  
 			entries[[i]] <- tkentry(tt, width="100", textvariable=tcvars[[i]])	    
 			
-			tkpack( tklabel(tt, text=sprintf("Variable: %s", names(tmp.br)[i]) ))
+			tkpack( tklabel(tt, text=sprintf("Variable: %s", names(spE$tmp.br)[i]) ))
 			tkpack(  entries[[i]] )
 		}
 	 
                
 
-		tcvars[[n.tmp.br+1]] <- tclVar(  )  
-		entries[[n.tmp.br+1]] <- tkentry(tt, width="100", textvariable=tcvars[[n.tmp.br+1]])	    
+		tcvars[[spE$n.tmp.br+1]] <- tclVar(  )  
+		entries[[spE$n.tmp.br+1]] <- tkentry(tt, width="100", textvariable=tcvars[[spE$n.tmp.br+1]])	    
 		
 		tkpack( tklabel(tt, text="Additional CEM args:"))
-		tkpack(  entries[[n.tmp.br+1]] )
+		tkpack(  entries[[spE$n.tmp.br+1]] )
                 #tkpack( entries[[n.tmp.br]])
 		
 		
 		OnOK <- function(){
 			other.args <- NULL
-			cat("\n... running new cem...\n")
-			n.tmp.br <- length(tmp.br)
-			for(i in 1:n.tmp.br){
-				vv <- names(tmp.br)[i]
+			if(verbose >= 1)
+		  	cat("\n... running new cem...\n")
+			spE$n.tmp.br <- length(spE$tmp.br)
+			for(i in 1:spE$n.tmp.br){
+				vv <- names(spE$tmp.br)[i]
 				tmpc <- tclvalue( tcvars[[i]] )
-				new.br[[i]] <<- try(eval(parse(text=tmpc)), silent = TRUE)
-				if( class(new.br[[i]]) == "try-error"){
-					cat(sprintf("\nError in settings cutpoints of variable << %s >>:\n\n >> %s <<\n\n Using original ones.\n", vv, tmpc) )
-					new.br[[i]] <<- tmp.br[[i]] 
+				spE$new.br[[i]] <- try(eval(parse(text=tmpc)), silent = TRUE)
+				if( class(spE$new.br[[i]]) == "try-error"){
+					warning(sprintf("\nError in settings cutpoints of variable << %s >>:\n\n >> %s <<\n\n Using original ones.\n", vv, tmpc) )
+				  spE$new.br[[i]] <- spE$tmp.br[[i]] 
 				}
 			}
-			tmpc <- tclvalue( tcvars[[n.tmp.br+1]] )
+			tmpc <- tclvalue( tcvars[[spE$n.tmp.br+1]] )
 			other.args <- try(eval(parse(text=tmpc)), silent = TRUE)
 			if( class(other.args) == "try-error"){
-				cat(sprintf("\nError in additional CEM arguments specification. Ignoring them.\n", tmpc) )
+				warning(sprintf("\nError in additional CEM arguments specification. Ignoring them.\n", tmpc) )
 				other.args <- NULL 
 			} else 
 			 other.args <- tmpc
 			tclServiceMode(FALSE)	
                   ## reconstruct the call
-                  cpholder <- rep(NA,length(new.br))
-                  for(ii in 1:length(new.br)){
-                    cpholder[ii] <-paste(names(new.br)[ii],"=c(",paste(new.br[[ii]],collapse=", "),")",sep="")
+                  cpholder <- rep(NA,length(spE$new.br))
+                  for(ii in 1:length(spE$new.br)){
+                    cpholder[ii] <-paste(names(spE$new.br)[ii],"=c(",paste(spE$new.br[[ii]],collapse=", "),")",sep="")
                   }
                   breakslist <-  paste("list(",paste(cpholder,collapse=", "),")")
 
-                   cem.call <-  sprintf("cem(obj$match$treatment, data=data[,c(obj$match$vars,obj$match$treatment) ], cutpoints=%s, %s)", breakslist, other.args)
-			#if(!is.null(other.args))
-			tmp.mat <- eval(parse(text=cem.call))
-                  #      else
-			#   tmp.mat <- cem(obj$match$treatment, data=data[,c(obj$match$vars,obj$match$treatment) ], cutpoints=new.br, eval.imbalance=FALSE)
+                   cem.call <-  sprintf("cem(spE$obj$match$treatment, data=data[,c(spE$obj$match$vars,spE$obj$match$treatment) ], cutpoints=%s, %s)", breakslist, other.args)
 
-                        
+                   			tmp.mat <- eval(parse(text=cem.call))
+
+                   	                        
 			tclServiceMode(TRUE)
-			#tmp.ML1 <- L1.meas(obj$match$groups, data=data[,obj$match$vars], breaks=obj$medianCP, weights=tmp.mat$w)$L1
                   if(balance.metric=="L1"){
-			  tmp.ML1 <- L1.meas(obj$match$groups, data=data[,obj$match$vars], breaks=obj$medianCP, weights=tmp.mat$w)$L1
+			  tmp.ML1 <- L1.meas(spE$obj$match$groups, data=data[,spE$obj$match$vars], breaks=spE$obj$medianCP, weights=tmp.mat$w)$L1
 			}
                   if(balance.metric=="mdiff"){
-                    tmp.ML1 <- mdiff(caliperdat=data[,c(obj$match$treatment, obj$match$vars)],alldat=data[,c(obj$match$treatment, obj$match$vars)],mvars=tmp.mat$vars,tvar=obj$match$treatment, wt=tmp.mat$w)
+                    tmp.ML1 <- mdiff(caliperdat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],alldat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],mvars=tmp.mat$vars,tvar=spE$obj$match$treatment, wt=tmp.mat$w)
                   }
                   if(balance.metric=="mdisc"){
-                    tmp.ML1 <- mdisc2(caliperdat=data[,c(obj$match$treatment, obj$match$vars)],alldat=data[,c(obj$match$treatment, obj$match$vars)],mvars=tmp.mat$vars,tvar=obj$match$treatment, wt=tmp.mat$w)
+                    tmp.ML1 <- mdisc2(caliperdat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],alldat=data[,c(spE$obj$match$treatment, spE$obj$match$vars)],mvars=tmp.mat$vars,tvar=spE$obj$match$treatment, wt=tmp.mat$w)
                   }
                   tmp.n <- tmp.mat$tab["Matched", g] 
-			len.c <- length(n)
-			n[len.c+1] <<- tmp.n 	 
-			ML1[len.c+1] <<- tmp.ML1 	 
-			Relaxed[len.c+1] <<- "<new>"	
-			Method[len.c+1] <<- "cem"
-              	Call[len.c+1] <<- cem.call 
-			obj$coars[[len.c+1]] <<- new.br	
-			xy <<- xy.coords(1/sqrt(n), ML1)
+			len.c <- length(spE$n)
+			spE$n[len.c+1] <- tmp.n 	 
+			spE$ML1[len.c+1] <- tmp.ML1 	 
+			spE$Relaxed[len.c+1] <- "<new>"	
+			spE$Method[len.c+1] <- "cem"
+			spE$Call[len.c+1] <- cem.call 
+			spE$obj$coars[[len.c+1]] <- spE$new.br	
+			spE$xy <- xy.coords(1/sqrt(spE$n), spE$ML1)
 			update.imbplot(len.c+1)	 
 		}
 		
@@ -2867,24 +2412,7 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 		tkpack(OK.but) 
 		tclServiceMode(TRUE)
 
-##            ## Make a button to update the spacegraph obj.
-## I COULDN'T GET THIS TO WORK EASILY
-##		UPDATE <- function(){
-##			other.args <- NULL
-##			cat("\n... updating spacegraph object ...\n")
-##                
-##                  update <- paste(obj.name,"$space <- cbind(n,ML1,Relaxed,Method,Call)",sep="")
-##                  print(update)
-##                  eval(parse(text=update))
-##                  cat("\n... update complete ...\n")
-##		}
-##		
-##		
-##		UPDATE.but <-tkbutton(tt,text="   Save modified spacegraph info   ",command=UPDATE)
-##		
-##		tkpack(UPDATE.but) 
-##		tclServiceMode(TRUE)
-        
+		  
 	}
 	
 	firstime <- TRUE
@@ -2892,11 +2420,13 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 		if(length(mT)==0)
 		return(FALSE)
 		
-		if(scale.var==T)
-		  idx <- which(n>=n[mT])
-            if(scale.var==F)
-              idx <- which(n<=n[mT])
-		idx2 <- which(ML1[idx]<= ML1[mT])
+		if(scale.var==T){
+		  idx <- which(spE$n>=spE$n[mT])
+		}
+    if(scale.var==F){
+        idx <- which(spE$n<=spE$n[mT])
+    }
+		idx2 <- which(spE$ML1[idx]<= spE$ML1[mT])
 		idx <- idx[idx2]
 
                 ## my addition -- will it screw things up?
@@ -2904,97 +2434,97 @@ spacegraph.plot <- function(obj, objname=NULL, group="1", explore=TRUE,
 
              
 		
-		id.new <- which(Relaxed =="<new>")
+		id.new <- which(spE$Relaxed =="<new>")
 
 
                 ## white-out
-                text(1/sqrt(n[id.raw]), ML1[id.raw], "\u2585", col="white", cex=5, adj=0)
-                points(1/sqrt(n[ids]), ML1[ids],   col="white", pch=19,cex=2)
+                text(1/sqrt(spE$n[id.raw]), spE$ML1[id.raw], "\u2585", col="white", cex=5, adj=0)
+                points(1/sqrt(spE$n[ids]), spE$ML1[ids],   col="white", pch=19,cex=2)
                 if(length(id.new))
-                  points(1/sqrt(n[id.new]), ML1[id.new],   col="white", pch=19,cex=2)
+                  points(1/sqrt(spE$n[id.new]), spE$ML1[id.new],   col="white", pch=19,cex=2)
                 box()
-                points(1/sqrt(n[ids]), ML1[ids],   col=dotcol[ids], pch=20)
+                points(1/sqrt(spE$n[ids]), spE$ML1[ids],   col=dotcol[ids], pch=20)
                 #points(1/sqrt(n[idx.sav]), ML1[idx.sav],   col="white", pch=19,cex=2.2)
 		#points(1/sqrt(n[idx.sav]), ML1[idx.sav],   col=dotcol[ids], pch=20)
-		points(1/sqrt(n[idxx]), ML1[idxx],   col=selcol, pch=1,cex=1)
+		points(1/sqrt(spE$n[idxx]), spE$ML1[idxx],   col=selcol, pch=1,cex=1)
                	#points(1/sqrt(n[mT]), ML1[mT],   col="white", pch=3)
-                points(1/sqrt(n[mT]), ML1[mT],   col=dotcol[mT], pch=20)
-		points(1/sqrt(n[mT]), ML1[mT],   col="black", pch=1,
+                points(1/sqrt(spE$n[mT]), spE$ML1[mT],   col=dotcol[mT], pch=20)
+		points(1/sqrt(spE$n[mT]), spE$ML1[mT],   col="black", pch=1,
                        cex=1.5)
-		points(1/sqrt(n[id.raw]), ML1[id.raw],   col="black",
+		points(1/sqrt(spE$n[id.raw]), spE$ML1[id.raw],   col="black",
                        pch=21, bg="white")
                  
-                text(1/sqrt(n[id.raw]), ML1[id.raw], "raw",
+                text(1/sqrt(spE$n[id.raw]), spE$ML1[id.raw], "raw",
                      col="black",adj=-0.5, cex=0.7)
                 
-		points(1/sqrt(n[mT]), ML1[mT],   col=dotcol[mT], pch=20)
+		points(1/sqrt(spE$n[mT]), spE$ML1[mT],   col=dotcol[mT], pch=20)
 		if(length(id.start)>0){
-			points(1/sqrt(n[id.start]), ML1[id.start],   col="green", pch=20)
-			text(1/sqrt(n[id.start]), ML1[id.start], "start",  col="green",adj=-0.5, cex=0.7)
+			points(1/sqrt(spE$n[id.start]), spE$ML1[id.start],   col="green", pch=20)
+			text(1/sqrt(spE$n[id.start]), spE$ML1[id.start], "start",  col="green",adj=-0.5, cex=0.7)
 		}
 		if(length(id.new)){
                newdotcol <- rep("#00000050",length(id.new))
-               newdotcol <- unlist(method.col[Method[id.new]])
-		   points(1/sqrt(n[id.new]), ML1[id.new],   col=newdotcol, pch=20)
+               newdotcol <- unlist(method.col[spE$Method[id.new]])
+		   points(1/sqrt(spE$n[id.new]), spE$ML1[id.new],   col=newdotcol, pch=20)
             }
-             points(1/sqrt(n[mT]), ML1[mT],   col="black", pch=1, cex=1.5)
+             points(1/sqrt(spE$n[mT]), spE$ML1[mT],   col="black", pch=1, cex=1.5)
 		id.bad <- which(idx == id.raw)
 		if(length(id.bad>0))
 		 idx <- idx[-id.bad]
 		if(length(idx)>0){
- 		  y <- lapply(obj$coars[idx], function(a) unlist(lapply(a, length)))
+ 		  y <- lapply(spE$obj$coars[idx], function(a) unlist(lapply(a, length)))
 		  x <- matrix(unlist(y), length(y), length(y[[1]]), byrow=TRUE) 
 		
 		  colnames(x) <- names(y[[1]])
 		  tmp <- as.data.frame(x)
 				
-		  tmp2 <- data.frame(tmp, ML1=ML1[idx])	
+		  tmp2 <- data.frame(tmp, ML1=spE$ML1[idx])	
 		  rownames(tmp2) <- idx
 		
-		 if(haveTCL & !is.null(obj$coars[[mT]])){
-			ttt <- obj$coars[[mT]]
+		 if(haveTCL & !is.null(spE$obj$coars[[mT]])){
+			ttt <- spE$obj$coars[[mT]]
 
- 			for(i in 1:length(tmp.br)){
+ 			for(i in 1:length(spE$tmp.br)){
 				tclvalue( tcvars[[i]] )  <-  deparse( round(ttt[[i]], 2), width.cutoff=500)
   	 		}
                         
-                        mycall <- Call[mT]
+                        mycall <- spE$Call[mT]
 
 
                         tclvalue(callInfo) <- mycall
                         
-			       if(scale.var==T)
-                           tclvalue(infoText) <- sprintf("Method=%s, Matched units=%d, ML1=%.3f",toupper(Method[mT]), n[mT], ML1[mT]) 
-                         if(scale.var==F)
-                           tclvalue(infoText) <- sprintf("Method=%s, Matched units=%d, ML1=%.3f",toupper(Method[mT]), round(1/sqrt(n[mT]),0), ML1[mT])
+			       if(scale.var==TRUE)
+                           tclvalue(infoText) <- sprintf("Method=%s, Matched units=%d, ML1=%.3f",toupper(spE$Method[mT]), spE$n[mT], spE$ML1[mT]) 
+              if(scale.var==FALSE)
+                           tclvalue(infoText) <- sprintf("Method=%s, Matched units=%d, ML1=%.3f",toupper(spE$Method[mT]), round(1/sqrt(spE$n[mT]),0), spE$ML1[mT])
                         tkfocus(tt)	
 		 }
 		}
 
 		
-		old.idx <<- list(breaks = obj$coars[[mT]], n=n[mT], ML1=ML1[mT], medianCP=obj$medianCP)
+		spE$old.idx <- list(breaks = obj$coars[[mT]], n=spE$n[mT], ML1=spE$ML1[mT], medianCP=spE$obj$medianCP)
 	
 		
-		idx.sav <<- idx
+		spE$idx.sav <- idx
 		
 		return(TRUE)
 		
 	}
 	
-	old.idx <- NULL
+	spE$old.idx <- NULL
 	update.imbplot( 2 )
 	
 	while(goOn){
-		xy <<- xy.coords(1/sqrt(n), ML1)
-		goOn <- update.imbplot(identify(xy, n=1,plot=FALSE)) 
+	  spE$xy <- xy.coords(1/sqrt(spE$n), spE$ML1)
+		goOn <- update.imbplot(identify(spE$xy, n=1,plot=FALSE)) 
 	}
 	
     if(haveTCL)
 	 tkdestroy(tt)
 	
 	
-	class(old.idx) <- "selected.cem"
-  	old.idx
+	class(spE$old.idx) <- "selected.cem"
+  return(spE$old.idx)
 	
 }
 ############################################################

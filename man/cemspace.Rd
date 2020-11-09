@@ -7,11 +7,13 @@ Exploration tool for CEM
 \usage{
 cemspace(treatment=NULL, data = NULL, R=100, grouping = NULL, drop=NULL,
 L1.breaks = NULL, L1.grouping=NULL, plot = TRUE, fixed = NULL, 
-minimal = 1, maximal = 5, M=250, raw.profile=NULL, keep.weights=FALSE) 
+minimal = 1, maximal = 5, M=250, raw.profile=NULL, keep.weights=FALSE,
+verbose=1) 
 }
 \arguments{
   \item{treatment}{character, name of the treatment variable.}
   \item{data}{a data.frame.}
+  \item{verbose}{integer, controls output.}
   \item{R}{number of possible random coarsening for the CEM.}
   \item{grouping}{named list, each element of which is a list of
   groupings for a single categorical variable. For more details see \code{\link{cem}}.}
@@ -51,13 +53,18 @@ If you want to relax a given cem solution, use the function
 \value{
   \item{val}{an invisible object of class \code{imbalance.space}.}
 }
-\references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
-  http://gking.harvard.edu/files/abs/cem-abs.shtml}
+\references{
+Iacus, King, Porro (2011) \url{https://doi.org/10.1198/jasa.2011.tm09599}
+
+Iacus, King, Porro (2012) \url{https://doi.org/10.1093/pan/mpr013}
+	
+Iacus, King, Porro (2019) \url{ https://doi.org/10.1017/pan.2018.29}
+}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \examples{
-\dontrun{
+\donttest{
 data(LL)
+set.seed(123)
 tmp <- cemspace("treated", LL, drop="re78", M=50)
 }
 }

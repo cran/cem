@@ -7,7 +7,8 @@ Calculates L1 distance for different coarsenings
 \usage{
 L1.profile(group, data, drop = NULL, min.cut = 2, max.cut = 12, 
 weights, plot = TRUE, add = FALSE, col = "red", 
-lty = 1, M=100, useCP=NULL, grouping=NULL, progress=TRUE)
+lty = 1, M=100, useCP=NULL, grouping=NULL, progress=TRUE,
+verbose=1)
 }
 \arguments{
   \item{group}{the group variable}
@@ -27,6 +28,8 @@ lty = 1, M=100, useCP=NULL, grouping=NULL, progress=TRUE)
   \item{grouping}{named list, each element of which is a list of
   groupings for a single categorical variable. See Details.}
   \item{progress}{if \code{TRUE}, feedback on progress is given. See Details.}
+   \item{verbose}{integer, controls level of output.}
+ 
 }
 \details{
   The L1 measure depends on the coarsening chosen to calculate it, and
@@ -55,12 +58,17 @@ A \code{plot} method exists for the returned object.
   An invisible object of class \code{L1profile} which contains a named list of coarsenings and 
   values of the L1 measure for each coarsening.
 }
-\references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
-  http://gking.harvard.edu/files/abs/cem-abs.shtml}
+\references{
+Iacus, King, Porro (2011) \url{https://doi.org/10.1198/jasa.2011.tm09599}
+
+Iacus, King, Porro (2012) \url{https://doi.org/10.1093/pan/mpr013}
+	
+Iacus, King, Porro (2019) \url{ https://doi.org/10.1017/pan.2018.29}
+}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \examples{
-\dontrun{
+\donttest{
+set.seed(123)
 data(LL)
 for(i in c(4:6,10:12))
  LL[[i]] <- factor(LL[[i]])
@@ -72,15 +80,17 @@ if(require(MatchIt)){
   u74 + u75 + education + age + re74 + re75, data=LL, 
   distance="logit")
 
- m3 <- matchit(treated ~ black + hispanic + married + nodegree + 
+ m3 <- try(matchit(treated ~ black + hispanic + married + nodegree + 
   u74 + u75 + education + age + re74 + re75, data=LL, 
-  distance="mahalanobis")
+  distance="mahalanobis"), TRUE)
  
  L1.profile(LL$treated,LL, drop=c("treated","re78"), 
   weights=m2$w, add=TRUE, col="green", lty=2, useCP=imb0$CP)
 
- L1.profile(LL$treated,LL, drop=c("treated","re78"), 
-  weights=m3$w, add=TRUE, col="orange", lty=3, useCP=imb0$CP)
+ if(class(m3)[1]!="try-error"){
+   L1.profile(LL$treated,LL, drop=c("treated","re78"), 
+    weights=m3$w, add=TRUE, col="orange", lty=3, useCP=imb0$CP)
+    }
 }
 
 m1 <- cem("treated", LL, drop="re78")

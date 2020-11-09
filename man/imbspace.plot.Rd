@@ -5,13 +5,14 @@
 Plot of imbalance space diagnostic tool for CEM
 }
 \usage{
-imbspace.plot(obj, group="1", data, explore=TRUE)
+imbspace.plot(obj, group="1", data, explore=TRUE, verbose=1)
 }
 \arguments{
   \item{obj}{an object of class \code{imbalance.space}}
   \item{group}{character string denoting group id. Defaults to \code{"1"}.}
   \item{data}{data for running additional matching solutions.}
   \item{explore}{if \code{TRUE} the user can interact and find new solutions.}
+  \item{verbose}{integer, controls output.}
 }
 
 \details{
@@ -36,17 +37,21 @@ units matched.
   \item{tab}{an invisible object containing the selection of cem solutions and their
   coarsenings.}
 }
-\references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
-  http://gking.harvard.edu/files/abs/cem-abs.shtml}
+\references{
+Iacus, King, Porro (2011) \url{https://doi.org/10.1198/jasa.2011.tm09599}
+
+Iacus, King, Porro (2012) \url{https://doi.org/10.1093/pan/mpr013}
+	
+Iacus, King, Porro (2019) \url{ https://doi.org/10.1017/pan.2018.29}
+}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \seealso{ \code{\link{imbspace}} }
 \examples{
-\dontrun{
+\donttest{
 require(cem)
 
 data(LL)
-
+set.seed(123)
 mat <- cem("treated", LL, drop=c("re78","treated"), 
  cut=list(age=4, edu=4, re74=3, re75=3), keep.all=TRUE)
 mat

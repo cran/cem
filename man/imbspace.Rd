@@ -7,7 +7,7 @@ Diagnostic tools for CEM
 \usage{
 imbspace(obj, data, depth = 1, L1.breaks = NULL, 
 plot = TRUE, fixed = NULL, minimal = 1, maximal = 6,
-M=250, raw.profile=NULL) 
+M=250, raw.profile=NULL, verbose=1) 
 }
 \arguments{
   \item{obj}{an object of class \code{cem.match}}
@@ -26,6 +26,8 @@ M=250, raw.profile=NULL)
   \item{M}{number of possible random coarsening for the L1 measure}
   \item{raw.profile}{and object of class \code{L1profile}. If passed, the \code{L1.breaks} are
   ignored.}
+   \item{verbose}{integer, controls output.}
+ 
 }
 
 \details{
@@ -42,9 +44,13 @@ effect of calling directly \code{\link{imbspace.plot}}.
 \value{
   \item{val}{an invisible object of class \code{imbalance.space}.}
 }
-\references{Stefano Iacus, Gary King, Giuseppe Porro, ``Matching for
-  Casual Inference Without Balance Checking: Coarsened Exact Matching,''
-  http://gking.harvard.edu/files/abs/cem-abs.shtml}
+\references{
+Iacus, King, Porro (2011) \url{https://doi.org/10.1198/jasa.2011.tm09599}
+
+Iacus, King, Porro (2012) \url{https://doi.org/10.1093/pan/mpr013}
+	
+Iacus, King, Porro (2019) \url{ https://doi.org/10.1017/pan.2018.29}
+}
 \author{Stefano Iacus, Gary King, and Giuseppe Porro}
 \seealso{ \code{\link{imbspace.plot}} }
 \keyword{datagen}

@@ -1,25 +1,28 @@
+### R code from vignette source 'cem.Rnw'
+
 ###################################################
-### chunk number 1: 
+### code chunk number 1: cem.Rnw:352-355
 ###################################################
+old.options <- options()
 options("digits"=4)
 options("width"=80)
 
 
 ###################################################
-### chunk number 2: 
+### code chunk number 2: cem.Rnw:357-359
 ###################################################
 require(cem)
 data(LeLonde)
 
 
 ###################################################
-### chunk number 3: 
+### code chunk number 3: cem.Rnw:364-365
 ###################################################
 Le <- data.frame(na.omit(LeLonde))
 
 
 ###################################################
-### chunk number 4: 
+### code chunk number 4: cem.Rnw:368-372
 ###################################################
 tr <- which(Le$treated==1)
 ct <- which(Le$treated==0)
@@ -28,68 +31,68 @@ nct <- length(ct)
 
 
 ###################################################
-### chunk number 5: 
+### code chunk number 5: cem.Rnw:378-379
 ###################################################
 mean(Le$re78[tr]) - mean(Le$re78[ct])
 
 
 ###################################################
-### chunk number 6: 
+### code chunk number 6: cem.Rnw:386-388
 ###################################################
 vars <- c("age", "education", "black", "married", "nodegree", "re74",
 "re75", "hispanic", "u74", "u75","q1")
 
 
 ###################################################
-### chunk number 7: 
+### code chunk number 7: cem.Rnw:392-393
 ###################################################
 L1 <- L1.meas(Le$treated, Le[vars])$L1 
 
 
 ###################################################
-### chunk number 8: 
+### code chunk number 8: cem.Rnw:400-401
 ###################################################
 imbalance(group=Le$treated, data=Le[vars])
 
 
 ###################################################
-### chunk number 9: 
+### code chunk number 9: cem.Rnw:476-477
 ###################################################
-mat <- cem(treatment = "treated", data = Le, drop = "re78")
+mat <- cem(treatment = "treated", data = Le, drop = "re78",keep.all=TRUE)
 
 
 ###################################################
-### chunk number 10: 
+### code chunk number 10: cem.Rnw:492-493
 ###################################################
 mat
 
 
 ###################################################
-### chunk number 11: 
+### code chunk number 11: cem.Rnw:536-537
 ###################################################
 levels(Le$q1)
 
 
 ###################################################
-### chunk number 12: 
+### code chunk number 12: cem.Rnw:541-542
 ###################################################
 q1.grp <- list(c("strongly agree", "agree"), c("neutral","no opinion"), c("strongly disagree","disagree"))
 
 
 ###################################################
-### chunk number 13: 
+### code chunk number 13: cem.Rnw:564-565
 ###################################################
 table(Le$education)
 
 
 ###################################################
-### chunk number 14: 
+### code chunk number 14: cem.Rnw:568-569
 ###################################################
 educut <- c(0, 6.5, 8.5, 12.5, 17)
 
 
 ###################################################
-### chunk number 15: 
+### code chunk number 15: cem.Rnw:573-576
 ###################################################
 mat1 <- cem(treatment = "treated", data = Le, drop = "re78", 
 cutpoints = list(education=educut), grouping=list(q1=q1.grp))
@@ -97,19 +100,19 @@ mat1
 
 
 ###################################################
-### chunk number 16: 
+### code chunk number 16: cem.Rnw:584-585
 ###################################################
 mat$breaks$education
 
 
 ###################################################
-### chunk number 17: 
+### code chunk number 17: cem.Rnw:588-589
 ###################################################
 mat1$breaks$education
 
 
 ###################################################
-### chunk number 18: 
+### code chunk number 18: cem.Rnw:641-644
 ###################################################
 cem("treated", Le, cutpoints = list(age=10), drop="re78", grouping=list(q1=q1.grp))
 cem("treated", Le, cutpoints = list(age=6), drop="re78", grouping=list(q1=q1.grp))
@@ -117,13 +120,13 @@ cem("treated", Le, cutpoints = list(age=3), drop="re78", grouping=list(q1=q1.grp
 
 
 ###################################################
-### chunk number 19: 
+### code chunk number 19: cem.Rnw:659-660
 ###################################################
 tab <- relax.cem(mat, Le, depth=1, perc=0.3) 
 
 
 ###################################################
-### chunk number 20: 
+### code chunk number 20: cem.Rnw:664-667
 ###################################################
 pdf("coarsen1.pdf", width=9, height=6, pointsize=10)
 plot(tab,perc=0.3)
@@ -131,13 +134,13 @@ invisible(dev.off())
 
 
 ###################################################
-### chunk number 21: 
+### code chunk number 21: cem.Rnw:709-710
 ###################################################
 plot(tab, group="1", perc=0.35,unique=TRUE)
 
 
 ###################################################
-### chunk number 22: 
+### code chunk number 22: cem.Rnw:714-717
 ###################################################
 pdf("coarsen2.pdf", width=9, height=6, pointsize=10)
 plot(tab, group="1", perc=0.35,unique=TRUE)
@@ -145,15 +148,15 @@ invisible(dev.off())
 
 
 ###################################################
-### chunk number 23: 
+### code chunk number 23: cem.Rnw:751-754
 ###################################################
-mat <- cem(treatment="treated",data=Le, drop="re78")
+mat <- cem(treatment="treated",data=Le, drop="re78",keep.all=TRUE)
 mat
 mat$k2k
 
 
 ###################################################
-### chunk number 24: 
+### code chunk number 24: cem.Rnw:758-761
 ###################################################
 mat2 <- k2k(mat, Le, "euclidean", 1)
 mat2
@@ -161,7 +164,7 @@ mat2$k2k
 
 
 ###################################################
-### chunk number 25: 
+### code chunk number 25: cem.Rnw:773-777
 ###################################################
 data(LL)
 mat <- cem(treatment="treated", data=LL, drop="re78")
@@ -170,32 +173,32 @@ est
 
 
 ###################################################
-### chunk number 26: 
+### code chunk number 26: cem.Rnw:798-800
 ###################################################
 est2 <- att(mat, re78 ~ treated + re74, data = LL)
 est2
 
 
 ###################################################
-### chunk number 27: 
+### code chunk number 27: cem.Rnw:806-807
 ###################################################
 att(mat, re78 ~ treated + re74 , data = LL, model="linear")
 
 
 ###################################################
-### chunk number 28: 
+### code chunk number 28: cem.Rnw:810-811
 ###################################################
 att(mat, re78 ~ treated + re74 , data = LL, model="linear-RE")
 
 
 ###################################################
-### chunk number 29: 
+### code chunk number 29: cem.Rnw:815-816
 ###################################################
 att(mat, re78 ~ treated + re74 , data = LL, model="forest")
 
 
 ###################################################
-### chunk number 30: 
+### code chunk number 30: cem.Rnw:821-824
 ###################################################
 att(mat, re78 ~ treated + re74 , data = LL, model="linear", extra=TRUE)
 att(mat, re78 ~ treated + re74 , data = LL, model="linear-RE", extra=TRUE)
@@ -203,7 +206,7 @@ att(mat, re78 ~ treated + re74 , data = LL, model="rf", extra=TRUE)
 
 
 ###################################################
-### chunk number 31: 
+### code chunk number 31: cem.Rnw:827-830
 ###################################################
 est3 <- att(mat, re78 ~ treated + re74 , data = LL)
 est3
@@ -211,7 +214,7 @@ plot(est3, mat, LL, vars=c("education", "age", "re74", "re75"))
 
 
 ###################################################
-### chunk number 32: 
+### code chunk number 32: cem.Rnw:834-838
 ###################################################
 pdf("teff.pdf", width=9, height=6, pointsize=10)
 est3 <- att(mat, re78 ~ treated + re74 + re75, data = LL)
@@ -220,27 +223,27 @@ invisible(dev.off())
 
 
 ###################################################
-### chunk number 33: 
+### code chunk number 33: cem.Rnw:877-879
 ###################################################
 mat3 <- cem("treated", LeLonde, drop="re78", cutpoints = mat$breaks, grouping=list(q1=q1.grp))
 mat3
 
 
 ###################################################
-### chunk number 34: 
+### code chunk number 34: cem.Rnw:882-884
 ###################################################
 mat4 <- cem("treated", Le, drop="re78", cutpoints = mat$breaks, grouping=list(q1=q1.grp))
 mat4
 
 
 ###################################################
-### chunk number 35: 
+### code chunk number 35: cem.Rnw:902-903
 ###################################################
 summary(LeLonde)
 
 
 ###################################################
-### chunk number 36: 
+### code chunk number 36: cem.Rnw:907-912
 ###################################################
 require(Amelia)
 set.seed(123)
@@ -250,21 +253,21 @@ imputed <- imputed$imputations[1:5]
 
 
 ###################################################
-### chunk number 37: 
+### code chunk number 37: cem.Rnw:929-931
 ###################################################
 mat2 <- cem("treated", datalist=imputed, drop="re78", data=LeLonde, grouping=list(q1=q1.grp))
 mat2
 
 
 ###################################################
-### chunk number 38: 
+### code chunk number 38: cem.Rnw:938-940
 ###################################################
 out <- att(mat2, re78 ~ treated, data=imputed)
 out
 
 
 ###################################################
-### chunk number 39: 
+### code chunk number 39: cem.Rnw:946-953
 ###################################################
 data(LL)
 
@@ -276,26 +279,26 @@ psample <- pair(mat, data=LL)
 
 
 ###################################################
-### chunk number 40: 
+### code chunk number 40: cem.Rnw:956-957
 ###################################################
 table(psample$paired)
 
 
 ###################################################
-### chunk number 41: 
+### code chunk number 41: cem.Rnw:960-961
 ###################################################
 psample$paired[1:100]
 
 
 ###################################################
-### chunk number 42: 
+### code chunk number 42: cem.Rnw:965-967
 ###################################################
 table(psample$full.paired)
 psample$full.paired[1:10]
 
 
 ###################################################
-### chunk number 43: 
+### code chunk number 43: cem.Rnw:971-977
 ###################################################
 # cem match: automatic bin choice, we drop one row from the data set
 mat1 <- cem(data=LL[-1,], drop="re78")
@@ -303,5 +306,11 @@ mat1 <- cem(data=LL[-1,], drop="re78")
 # we want a set of paired units but we have an odd number of units in the data
 psample <- pair(mat1, data=LL[-1,])
 table(psample$full.paired)
+
+
+###################################################
+### code chunk number 44: cem.Rnw:979-980
+###################################################
+options(old.options)
 
 

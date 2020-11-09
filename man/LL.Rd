@@ -25,7 +25,7 @@ Lalonde experimental dataset  (see cited reference).
 }
 \source{see references}
 \references{
-Lalonde, R. (1986) ``Evaluating the Econometric Evaluations 
-of Training Programs,'' \emph{American Economic Review}, 76, 604-620.
+Lalonde (1986) Evaluating the Econometric Evaluations of Training Programs with Experimental Data, \emph{The American Economic Review},
+76(4), 604-620. 
 }
 \keyword{datasets}
