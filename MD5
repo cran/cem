@@ -1,6 +1,6 @@
-d1188d73c518a49a4ce3ec5b85de8f0a *DESCRIPTION
+fe17cb66a134c91e1f9676cff546a4d5 *DESCRIPTION
 746f557c4d1677f156b357eb7c4099e2 *NAMESPACE
-931ba587867af3c81d4e0c216cebdd8d *NEWS
+230f9433a6a76aa916696c9d3e8fab0e *NEWS
 29249285d7a029c0d7e60829bac3b730 *R/L1profile.R
 9a10218d15c9b61ba12c915c997f3a65 *R/att.R
 5fe02ebd55ca36522f85ab7b9d4b9e21 *R/cem.R
@@ -30,8 +30,8 @@ d9bf2e1858679cf504252887b3d9f32c *data/LL.rda
 b985ffc1342a1faffd65965095dc5042 *data/LLvsPSID.rda
 b8f790ceeb0093acef3157a7d4544b2e *data/LeLonde.rda
 7dcbc0c8a9c090278ddd162d44bf5711 *inst/doc/cem.R
-ff34f07037bc9ba4850e5619a75bde18 *inst/doc/cem.Rnw
-89daeb732758878a13829689893f3512 *inst/doc/cem.pdf
+a49e8f6b4fe6d0f3907f53b3e3e0fbf4 *inst/doc/cem.Rnw
+ac4a804766992be9f3b19545a95ebb87 *inst/doc/cem.pdf
 96e71e5606f42239777ae75088e241bb *inst/makeLelonde.R
 c7231ff0ed14b826608fa6e66fd1b22b *man/DW.Rd
 5f37244125123c23af7d108f8e15dfda *man/L1.meas.Rd
@@ -53,7 +53,7 @@ c76a5acc50a85254fa7b8f2e5111a7ea *man/pscoreSelect.Rd
 6bde717a18ad5ebc976927d248336bdb *man/search.match.Rd
 66c9ed60640b7e012dec6c4e19b06c2d *man/shift.cem.Rd
 1da9010ed072805c6b546458aee25d95 *man/spacegraph.Rd
-ff34f07037bc9ba4850e5619a75bde18 *vignettes/cem.Rnw
+a49e8f6b4fe6d0f3907f53b3e3e0fbf4 *vignettes/cem.Rnw
 16cc528ee41995f6f8912b279a0add07 *vignettes/gkextract.bib
 e1181734953c4e2b548b7bb44ec99f03 *vignettes/outdata1.csv
 794e8c9f2b3c146ba2404f82d6fe3883 *vignettes/outdata2.csv
